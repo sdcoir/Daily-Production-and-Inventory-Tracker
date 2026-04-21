@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SD Coir Company</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --ink:#f0ebe3;
+  --ink2:#a89f94;
+  --ink3:#5a524a;
+  --bg:#0f0d0b;
+  --bg2:#161310;
+  --bg3:#1d1915;
+  --border:#2a2420;
+  --border2:#3a322c;
+  --amber:#e8a020;
+  --amber2:#f5b93a;
+  --amber-dim:rgba(232,160,32,0.12);
+  --amber-glow:rgba(232,160,32,0.22);
+  --red:#e84040;
+  --red-dim:rgba(232,64,64,0.1);
+  --green:#4ec94e;
+  --green-dim:rgba(78,201,78,0.1);
+  --blue:#4aa8d8;
+  --nav-h:64px;
+  --header-h:56px;
+}
+
+html,body{
+  height:100%;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Barlow',sans-serif;
+  overflow:hidden;
+}
+
+/* dot grid bg */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:radial-gradient(circle,rgba(232,160,32,0.05) 1px,transparent 1px);
+  background-size:24px 24px;
+  pointer-events:none;z-index:0;
+}
+
+/* ══ APP SHELL ══ */
+#app{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  z-index:1;
+}
+
+/* ══ HEADER ══ */
+.header{
+  flex-shrink:0;
+  height:var(--header-h);
+  background:var(--bg2);
+  border-bottom:2px solid var(--amber);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;
+  box-shadow:0 2px 20px rgba(232,160,32,0.12);
+}
+.header-brand{
+  display:flex;align-items:center;gap:10px;
+}
+.brand-hex{
+  width:30px;height:30px;
+  background:var(--amber);
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:0.85rem;color:#000;
+}
+.brand-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:1.5rem;letter-spacing:3px;
+  color:var(--amber);
+  text-shadow:0 0 20px var(--amber-glow);
+}
+.header-right{
+  display:flex;align-items:center;gap:8px;
+}
+.live-dot-wrap{
+  display:flex;align-items:center;gap:5px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.58rem;color:var(--green);letter-spacing:1px;
+}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 6px var(--green);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+#hdr-clock{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.65rem;color:var(--ink3);letter-spacing:0.5px;
+}
+
+/* ══ KPI BAR ══ */
+.kpi-bar{
+  flex-shrink:0;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+}
+.kpi-cell{
+  padding:10px 4px 8px;
+  text-align:center;
+  border-right:1px solid var(--border);
+  position:relative;
+}
+.kpi-cell:last-child{border-right:none;}
+.kpi-cell::after{
+  content:'';position:absolute;bottom:0;left:15%;right:15%;
+  height:2px;border-radius:1px;opacity:0;
+  transition:opacity 0.3s;
+}
+.kpi-cell.amber::after{background:var(--amber);opacity:1;}
+.kpi-cell.green::after{background:var(--green);opacity:1;}
+.kpi-cell.red::after{background:var(--red);opacity:1;}
+.kpi-cell.blue::after{background:var(--blue);opacity:1;}
+.kpi-v{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:1.5rem;letter-spacing:0.5px;line-height:1;
+}
+.kpi-cell.amber .kpi-v{color:var(--amber);text-shadow:0 0 12px var(--amber-glow);}
+.kpi-cell.green .kpi-v{color:var(--green);}
+.kpi-cell.red .kpi-v{color:var(--red);}
+.kpi-cell.blue .kpi-v{color:var(--blue);}
+.kpi-l{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.48rem;color:var(--ink3);
+  letter-spacing:1px;text-transform:uppercase;margin-top:2px;
+}
+
+/* ══ PAGES ══ */
+.pages{
+  flex:1;overflow:hidden;position:relative;
+}
+.page{
+  position:absolute;inset:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  display:none;
+  padding-bottom:calc(var(--nav-h) + 12px);
+}
+.page.active{display:block;}
+.page::-webkit-scrollbar{display:none;}
+
+/* ══ BOTTOM NAV ══ */
+.bottom-nav{
+  flex-shrink:0;
+  height:var(--nav-h);
+  background:var(--bg2);
+  border-top:1px solid var(--border2);
+  display:grid;grid-template-columns:repeat(3,1fr);
+  position:relative;z-index:50;
+}
+.nav-btn{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:4px;
+  background:none;border:none;cursor:pointer;
+  color:var(--ink3);
+  transition:color 0.15s;
+  padding:8px 0;
+  position:relative;
+}
+.nav-btn::before{
+  content:'';position:absolute;top:0;left:20%;right:20%;
+  height:2px;background:var(--amber);
+  transform:scaleX(0);transition:transform 0.2s ease;
+}
+.nav-btn.active{color:var(--amber);}
+.nav-btn.active::before{transform:scaleX(1);}
+.nav-icon{font-size:1.3rem;line-height:1;}
+.nav-label{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.5rem;letter-spacing:1.5px;text-transform:uppercase;
+}
+
+/* ══ PAGE INNER ══ */
+.pg-section{
+  margin:12px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+}
+.pg-sec-head{
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.pg-sec-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:0.85rem;
+  letter-spacing:3px;text-transform:uppercase;color:var(--amber);
+}
+.pg-sec-badge{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.5rem;letter-spacing:1.5px;
+  padding:3px 7px;border-radius:2px;
+  color:var(--ink3);border:1px solid var(--border2);
+}
+
+/* ══ FORM ══ */
+.form-pad{padding:16px;}
+.field-g{margin-bottom:14px;}
+.field-g:last-child{margin-bottom:0;}
+.field-label{
+  display:block;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.52rem;letter-spacing:2px;color:var(--ink3);
+  text-transform:uppercase;margin-bottom:6px;
+}
+.field-input,.field-select{
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:4px;
+  padding:13px 14px;
+  color:var(--ink);
+  font-family:'Share Tech Mono',monospace;
+  font-size:1rem;
+  outline:none;
+  transition:border-color 0.15s,box-shadow 0.15s;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.field-input:focus,.field-select:focus{
+  border-color:var(--amber);
+  box-shadow:0 0 0 3px var(--amber-dim);
+}
+.field-input::placeholder{color:var(--ink3);}
+.field-select option{background:var(--bg3);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ══ BIG BUTTONS ══ */
+.btn-produce{
+  width:100%;padding:16px;
+  background:var(--amber);color:#0f0d0b;
+  border:none;border-radius:4px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:1.1rem;letter-spacing:3px;
+  text-transform:uppercase;
+  transition:all 0.15s;
+  box-shadow:0 4px 20px var(--amber-glow);
+  margin-bottom:8px;
+}
+.btn-produce:active{transform:scale(0.98);background:var(--amber2);}
+
+.btn-dispatch{
+  width:100%;padding:15px;
+  background:transparent;color:var(--red);
+  border:1.5px solid var(--red);border-radius:4px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:1rem;letter-spacing:3px;
+  text-transform:uppercase;
+  transition:all 0.15s;
+}
+.btn-dispatch:active{background:var(--red-dim);transform:scale(0.98);}
+
+.btn-ghost-sm{
+  background:transparent;color:var(--ink3);
+  border:1px solid var(--border2);border-radius:3px;
+  padding:7px 12px;cursor:pointer;
+  font-family:'Share Tech Mono',monospace;font-size:0.6rem;
+  letter-spacing:1px;text-transform:uppercase;
+  transition:all 0.15s;
+}
+.btn-ghost-sm:active{border-color:var(--ink2);color:var(--ink2);}
+
+.divider-section{
+  display:flex;align-items:center;gap:10px;
+  margin:16px 0;
+}
+.div-l{flex:1;height:1px;background:var(--border);}
+.div-t{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.52rem;color:var(--ink3);letter-spacing:2px;
+}
+
+/* ══ PRODUCT CARDS ══ */
+.product-card{
+  padding:16px;border-bottom:1px solid var(--border);
+  position:relative;
+}
+.product-card:last-child{border-bottom:none;}
+.product-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;border-radius:0 2px 2px 0;
+  background:var(--amber);opacity:0;transition:opacity 0.15s;
+}
+.product-card:active::before{opacity:1;}
+
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.pc-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:1.15rem;letter-spacing:1px;
+}
+.pc-date{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.55rem;color:var(--ink3);margin-top:3px;
+}
+.pc-today-tag{
+  font-family:'Share Tech Mono',monospace;font-size:0.58rem;
+  padding:4px 9px;border-radius:3px;
+}
+.pc-today-tag.has{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(232,160,32,0.2);}
+.pc-today-tag.none{color:var(--ink3);}
+
+.pc-stock-row{
+  display:flex;align-items:baseline;gap:8px;margin-bottom:10px;
+}
+.pc-stock-num{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:2.8rem;letter-spacing:1px;line-height:1;
+}
+.stk-full{color:var(--green);text-shadow:0 0 14px rgba(78,201,78,0.3);}
+.stk-mid{color:var(--amber);text-shadow:0 0 14px var(--amber-glow);}
+.stk-low{color:var(--red);text-shadow:0 0 14px rgba(232,64,64,0.3);}
+.stk-zero{color:var(--ink3);}
+.pc-stock-unit{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.65rem;color:var(--ink3);
+}
+
+.progress-track{
+  height:5px;background:var(--border2);border-radius:3px;
+  margin-bottom:12px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;border-radius:3px;
+  transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+.pc-meta{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+.pc-stats{
+  display:flex;gap:12px;
+  font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--ink3);
+}
+.chip{
+  display:inline-flex;align-items:center;
+  padding:3px 8px;border-radius:2px;font-size:0.52rem;
+  font-family:'Share Tech Mono',monospace;letter-spacing:1px;
+}
+.chip-active{background:var(--green-dim);color:var(--green);border:1px solid rgba(78,201,78,0.2);}
+.chip-low{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(232,160,32,0.2);}
+.chip-zero{background:var(--red-dim);color:var(--red);border:1px solid rgba(232,64,64,0.2);}
+
+/* ══ ACTIVITY LOG ══ */
+.act-item{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  animation:slid 0.2s ease;
+}
+@keyframes slid{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.act-item:last-child{border-bottom:none;}
+.act-icon-box{
+  width:28px;height:28px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.8rem;flex-shrink:0;
+}
+.act-icon-box.produce{background:var(--amber-dim);color:var(--amber);}
+.act-icon-box.dispatch{background:var(--red-dim);color:var(--red);}
+.act-body{flex:1;}
+.act-title{font-size:0.88rem;font-weight:500;color:var(--ink);margin-bottom:3px;}
+.act-title strong{color:var(--amber);}
+.act-title.dis strong{color:var(--red);}
+.act-meta{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--ink3);}
+
+/* ══ EMPTY ══ */
+.empty-state{
+  padding:48px 20px;text-align:center;
+}
+.empty-ico{font-size:2.5rem;opacity:0.15;margin-bottom:12px;}
+.empty-txt{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.58rem;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;
+  line-height:1.8;
+}
+
+/* ══ MODAL ══ */
+.modal-veil{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.9);z-index:200;
+  align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-veil.open{display:flex;}
+.modal-sheet{
+  background:var(--bg2);
+  border:1px solid var(--red);
+  border-top:3px solid var(--red);
+  border-radius:12px 12px 0 0;
+  padding:24px 20px 36px;
+  width:100%;max-width:480px;
+  animation:sheetUp 0.25s ease;
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{
+  width:36px;height:4px;background:var(--border2);
+  border-radius:2px;margin:0 auto 20px;
+}
+.modal-title{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:1.5rem;letter-spacing:4px;color:var(--red);margin-bottom:6px;
+}
+.modal-sub{font-size:0.82rem;color:var(--ink2);margin-bottom:16px;line-height:1.6;}
+.modal-card{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:4px;padding:12px 14px;margin-bottom:14px;
+}
+.modal-card-name{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:1.1rem;color:var(--ink);margin-bottom:3px;
+}
+.modal-card-stock{
+  font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--amber);
+}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+.btn-mc{
+  padding:14px;border-radius:4px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;
+  border:none;transition:all 0.15s;
+}
+.btn-mc-cancel{background:var(--bg3);color:var(--ink3);border:1px solid var(--border2);}
+.btn-mc-confirm{background:var(--red);color:#fff;}
+.btn-mc-confirm:active{background:#c02020;transform:scale(0.98);}
+
+/* ══ TOAST ══ */
+#toast-z{
+  position:fixed;top:calc(var(--header-h) + 60px);
+  left:50%;transform:translateX(-50%);
+  z-index:999;display:flex;flex-direction:column;gap:8px;align-items:center;
+  pointer-events:none;
+}
+.toast{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:20px;padding:10px 18px;
+  font-family:'Share Tech Mono',monospace;font-size:0.7rem;
+  color:var(--ink);letter-spacing:1px;
+  animation:tIn 0.2s ease,tOut 0.25s ease 2s forwards;
+  display:flex;align-items:center;gap:8px;
+  white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,0.7);
+}
+.toast.ok{border-color:rgba(232,160,32,0.4);border-left:3px solid var(--amber);}
+.toast.bad{border-color:rgba(232,64,64,0.4);border-left:3px solid var(--red);}
+.toast.good{border-color:rgba(78,201,78,0.4);border-left:3px solid var(--green);}
+@keyframes tIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tOut{to{opacity:0;transform:translateY(-10px)}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-brand">
+      <div class="brand-hex">S</div>
+      <div class="brand-name">SD COIR CO.</div>
+    </div>
+    <div class="header-right">
+      <div class="live-dot-wrap"><div class="live-dot"></div>LIVE</div>
+      <div id="hdr-clock"></div>
+    </div>
+  </div>
+
+  <!-- KPI BAR -->
+  <div class="kpi-bar">
+    <div class="kpi-cell amber">
+      <div class="kpi-v" id="kpi-stock">0</div>
+      <div class="kpi-l">Total Stock</div>
+    </div>
+    <div class="kpi-cell green">
+      <div class="kpi-v" id="kpi-today">0</div>
+      <div class="kpi-l">Today Out</div>
+    </div>
+    <div class="kpi-cell red">
+      <div class="kpi-v" id="kpi-disp">0</div>
+      <div class="kpi-l">Dispatched</div>
+    </div>
+    <div class="kpi-cell blue">
+      <div class="kpi-v" id="kpi-skus">0</div>
+      <div class="kpi-l">Products</div>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="pages">
+
+    <!-- PAGE: LOG -->
+    <div class="page active" id="pg-log">
+      <div class="pg-section">
+        <div class="pg-sec-head">
+          <span class="pg-sec-title">Log Production</span>
+          <span class="pg-sec-badge">INPUT</span>
+        </div>
+        <div class="form-pad">
+          <div class="field-g">
+            <label class="field-label">Product</label>
+            <select id="f-product" class="field-select">
+              <option value="">— select product —</option>
+              <option value="Coir Pith">Coir Pith</option>
+              <option value="Coir Fiber">Coir Fiber</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <div class="field-g">
+              <label class="field-label">Quantity</label>
+              <input id="f-qty" class="field-input" type="number" min="1" placeholder="0" inputmode="numeric">
+            </div>
+            <div class="field-g">
+              <label class="field-label">Unit</label>
+              <select id="f-unit" class="field-select">
+                <option>Bags</option>
+                <option>Bundles</option>
+                <option>Units</option>
+                <option>Pcs</option>
+                <option>Sets</option>
+                <option>Kg</option>
+                <option>Boxes</option>
+                <option>Rolls</option>
+                <option>Sheets</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-g">
+            <label class="field-label">Production Date</label>
+            <input id="f-date" class="field-input" type="date">
+          </div>
+          <button class="btn-produce" onclick="logProduction()">▲ LOG PRODUCTION</button>
+        </div>
+      </div>
+
+      <div class="pg-section">
+        <div class="pg-sec-head">
+          <span class="pg-sec-title">Dispatch Stock</span>
+          <span class="pg-sec-badge">SOLD OUT</span>
+        </div>
+        <div class="form-pad">
+          <div class="field-g">
+            <label class="field-label">Select Product</label>
+            <select id="f-dispatch-product" class="field-select">
+              <option value="">— select product —</option>
+            </select>
+          </div>
+          <div class="field-g">
+            <label class="field-label">Dispatch Type</label>
+            <select id="f-dispatch-type" class="field-select">
+              <option>Full Stock — Sold Out / Dispatched</option>
+              <option>Partial Dispatch</option>
+              <option>Return / Write-off</option>
+            </select>
+          </div>
+          <div class="field-g" id="partial-qty-wrap" style="display:none;">
+            <label class="field-label">Quantity to Dispatch</label>
+            <input id="f-dispatch-qty" class="field-input" type="number" min="1" placeholder="0" inputmode="numeric">
+          </div>
+          <button class="btn-dispatch" onclick="openDispatch()">▼ DISPATCH / CLEAR STOCK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: INVENTORY -->
+    <div class="page" id="pg-inv">
+      <div class="pg-section">
+        <div class="pg-sec-head">
+          <span class="pg-sec-title">Inventory</span>
+          <span class="pg-sec-badge" id="inv-badge">0 ITEMS</span>
+        </div>
+        <div id="goods-list">
+          <div class="empty-state">
+            <div class="empty-ico">⬡</div>
+            <div class="empty-txt">No goods tracked yet<br>Log your first production run</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: ACTIVITY -->
+    <div class="page" id="pg-act">
+      <div class="pg-section">
+        <div class="pg-sec-head">
+          <span class="pg-sec-title">Activity Log</span>
+          <button class="btn-ghost-sm" onclick="clearLog()">CLEAR</button>
+        </div>
+        <div id="activity-list">
+          <div class="empty-state">
+            <div class="empty-ico">◎</div>
+            <div class="empty-txt">No activity yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- pages -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-log" onclick="switchTab('log')">
+      <div class="nav-icon">▲</div>
+      <div class="nav-label">Log</div>
+    </button>
+    <button class="nav-btn" id="nav-inv" onclick="switchTab('inv')">
+      <div class="nav-icon">⬡</div>
+      <div class="nav-label">Inventory</div>
+    </button>
+    <button class="nav-btn" id="nav-act" onclick="switchTab('act')">
+      <div class="nav-icon">◎</div>
+      <div class="nav-label">Activity</div>
+    </button>
+  </div>
+
+</div><!-- app -->
+
+<!-- DISPATCH MODAL (bottom sheet) -->
+<div class="modal-veil" id="modal-veil">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">DISPATCH</div>
+    <div class="modal-sub" id="modal-desc">This will clear all available stock. Inventory resets to zero.</div>
+    <div class="modal-card">
+      <div class="modal-card-name" id="modal-pname">—</div>
+      <div class="modal-card-stock" id="modal-pstock">—</div>
+    </div>
+    <div class="field-g">
+      <label class="field-label">Customer / Order Ref (optional)</label>
+      <input id="modal-ref" class="field-input" type="text" placeholder="Order #, client name…">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-mc btn-mc-cancel" onclick="closeDispatch()">CANCEL</button>
+      <button class="btn-mc btn-mc-confirm" onclick="confirmDispatch()">⚡ CONFIRM</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-z"></div>
+
+<script>
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+const SK = 'manufact_mobile_v1';
+let S = { products:{}, log:[] };
+function save(){ try{ localStorage.setItem(SK,JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const r=localStorage.getItem(SK); if(r) S=JSON.parse(r); }catch(e){} }
+
+// ══════════════════════════════════
+// BOOT
+// ══════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  load();
+  document.getElementById('f-date').value = today();
+  tick(); setInterval(tick,1000);
+  document.getElementById('f-dispatch-type').addEventListener('change',e=>{
+    document.getElementById('partial-qty-wrap').style.display =
+      e.target.value==='Partial Dispatch' ? 'block' : 'none';
+  });
+  renderAll();
+});
+
+function today(){ return new Date().toISOString().split('T')[0]; }
+function fmt(n){ return (+n).toLocaleString(undefined,{maximumFractionDigits:2}); }
+
+function tick(){
+  const now = new Date();
+  document.getElementById('hdr-clock').textContent =
+    now.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}).toUpperCase() + ' ' +
+    now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ══════════════════════════════════
+// TABS
+// ══════════════════════════════════
+function switchTab(tab){
+  ['log','inv','act'].forEach(t=>{
+    document.getElementById('pg-'+t).classList.toggle('active', t===tab);
+    document.getElementById('nav-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='inv') renderGoods();
+  if(tab==='act') renderActivity();
+}
+
+// ══════════════════════════════════
+// LOG PRODUCTION
+// ══════════════════════════════════
+function logProduction(){
+  const name = document.getElementById('f-product').value;
+  const qty  = parseFloat(document.getElementById('f-qty').value);
+  const unit = document.getElementById('f-unit').value;
+  const date = document.getElementById('f-date').value;
+
+  if(!name){ toast('Select a product','bad'); return; }
+  if(!qty||qty<=0){ toast('Enter a valid quantity','bad'); return; }
+  if(!date){ toast('Select a date','bad'); return; }
+
+  if(!S.products[name]){
+    S.products[name]={ unit, currentStock:0, totalProduced:0, totalDispatched:0, peakStock:0, runs:[], dispatches:[] };
+  }
+  const p = S.products[name];
+  p.unit=unit; p.currentStock+=qty; p.totalProduced+=qty;
+  if(p.currentStock>p.peakStock) p.peakStock=p.currentStock;
+  p.runs.push({ qty, date, ts:Date.now() });
+  S.log.unshift({ type:'produce', product:name, qty, unit, date, ts:Date.now() });
+
+  save(); renderAll();
+  toast(`+${fmt(qty)} ${unit} — ${name}`,'ok');
+  document.getElementById('f-qty').value='';
+  document.getElementById('f-product').value='';
+}
+
+// ══════════════════════════════════
+// DISPATCH
+// ══════════════════════════════════
+let _pd = null;
+
+function openDispatch(){
+  const name = document.getElementById('f-dispatch-product').value;
+  if(!name){ toast('Select a product','bad'); return; }
+  const p = S.products[name];
+  if(!p||p.currentStock<=0){ toast('No stock available','bad'); return; }
+
+  const dtype = document.getElementById('f-dispatch-type').value;
+  let qty = p.currentStock;
+  if(dtype==='Partial Dispatch'){
+    qty = parseFloat(document.getElementById('f-dispatch-qty').value);
+    if(!qty||qty<=0){ toast('Enter dispatch quantity','bad'); return; }
+    if(qty>p.currentStock){ toast(`Max: ${fmt(p.currentStock)} ${p.unit}`,'bad'); return; }
+  }
+
+  _pd = { name, qty, dtype };
+  document.getElementById('modal-pname').textContent = name;
+  document.getElementById('modal-pstock').textContent =
+    `Available: ${fmt(p.currentStock)} ${p.unit}  ·  Dispatching: ${fmt(qty)} ${p.unit}`;
+  document.getElementById('modal-desc').textContent =
+    dtype==='Full Stock — Sold Out / Dispatched'
+      ? 'This will clear ALL available stock. Inventory resets to zero — next production accumulates fresh.'
+      : `Dispatching ${fmt(qty)} ${p.unit}. Remaining stock stays in inventory.`;
+  document.getElementById('modal-ref').value='';
+  document.getElementById('modal-veil').classList.add('open');
+}
+
+function closeDispatch(){
+  document.getElementById('modal-veil').classList.remove('open');
+  _pd=null;
+}
+
+function confirmDispatch(){
+  if(!_pd) return;
+  const {name,qty,dtype} = _pd;
+  const p = S.products[name];
+  const ref = document.getElementById('modal-ref').value.trim();
+  p.currentStock = Math.max(0, p.currentStock-qty);
+  p.totalDispatched += qty;
+  p.dispatches.push({ qty, dtype, ref, date:today(), ts:Date.now() });
+  S.log.unshift({ type:'dispatch', product:name, qty, unit:p.unit, dtype, ref, date:today(), ts:Date.now() });
+  save(); renderAll(); closeDispatch();
+  toast(`${fmt(qty)} ${p.unit} dispatched`,'good');
+}
+
+function quickDispatch(name){
+  document.getElementById('f-dispatch-product').value=name;
+  document.getElementById('f-dispatch-type').value='Full Stock — Sold Out / Dispatched';
+  document.getElementById('partial-qty-wrap').style.display='none';
+  switchTab('log');
+  setTimeout(()=>{ openDispatch(); }, 100);
+}
+
+// ══════════════════════════════════
+// RENDER
+// ══════════════════════════════════
+function renderAll(){
+  renderKPIs(); renderGoods(); renderActivity(); populateSelects();
+}
+
+function renderKPIs(){
+  const ps = Object.values(S.products);
+  const td = today();
+  const totalStock = ps.reduce((a,p)=>a+p.currentStock,0);
+  const todayProd  = ps.reduce((a,p)=>a+p.runs.filter(r=>r.date===td).reduce((s,r)=>s+r.qty,0),0);
+  const todayDisp  = ps.reduce((a,p)=>a+p.dispatches.filter(d=>d.date===td).reduce((s,d)=>s+d.qty,0),0);
+  const skus       = ps.filter(p=>p.runs.length>0).length;
+  document.getElementById('kpi-stock').textContent = fmt(totalStock);
+  document.getElementById('kpi-today').textContent = fmt(todayProd);
+  document.getElementById('kpi-disp').textContent  = fmt(todayDisp);
+  document.getElementById('kpi-skus').textContent  = skus;
+}
+
+function renderGoods(){
+  const names = Object.keys(S.products);
+  document.getElementById('inv-badge').textContent = names.length+' ITEM'+(names.length!==1?'S':'');
+  const list = document.getElementById('goods-list');
+  if(!names.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-ico">⬡</div><div class="empty-txt">No goods tracked yet</div></div>`;
+    return;
+  }
+  const td = today();
+  list.innerHTML = names.map(name=>{
+    const p = S.products[name];
+    const todayQty = p.runs.filter(r=>r.date===td).reduce((a,r)=>a+r.qty,0);
+    const lastRun  = p.runs.length ? p.runs[p.runs.length-1] : null;
+    const pct = p.peakStock>0 ? Math.min(100,Math.round(p.currentStock/p.peakStock*100)) : 0;
+
+    let valClass,barColor,chip;
+    if(p.currentStock===0){
+      valClass='stk-zero'; barColor='var(--red)';
+      chip=`<span class="chip chip-zero">DISPATCHED</span>`;
+    } else if(pct<25){
+      valClass='stk-low'; barColor='var(--red)';
+      chip=`<span class="chip chip-low">LOW STOCK</span>`;
+    } else if(pct<60){
+      valClass='stk-mid'; barColor='var(--amber)';
+      chip=`<span class="chip chip-low">IN STOCK</span>`;
+    } else {
+      valClass='stk-full'; barColor='var(--green)';
+      chip=`<span class="chip chip-active">IN STOCK</span>`;
+    }
+    const todayTag = todayQty>0
+      ? `<span class="pc-today-tag has">+${fmt(todayQty)} TODAY</span>`
+      : `<span class="pc-today-tag none">NO OUTPUT</span>`;
+    const lastDate = lastRun ? lastRun.date : '—';
+
+    return `<div class="product-card">
+      <div class="pc-top">
+        <div>
+          <div class="pc-name">${name}</div>
+          <div class="pc-date">LAST: ${lastDate}</div>
+        </div>
+        ${todayTag}
+      </div>
+      <div class="pc-stock-row">
+        <span class="pc-stock-num ${valClass}">${fmt(p.currentStock)}</span>
+        <span class="pc-stock-unit">${p.unit} available</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${pct}%;background:${barColor}"></div>
+      </div>
+      <div class="pc-meta">
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${chip}
+          <div class="pc-stats">
+            <span>PROD: ${fmt(p.totalProduced)}</span>
+            <span>DISP: ${fmt(p.totalDispatched)}</span>
+          </div>
+        </div>
+        <button class="btn-ghost-sm" onclick="quickDispatch('${name.replace(/'/g,"\\'")}')">DISPATCH</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderActivity(){
+  const list = document.getElementById('activity-list');
+  if(!S.log.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-ico">◎</div><div class="empty-txt">No activity yet</div></div>`;
+    return;
+  }
+  list.innerHTML = S.log.slice(0,80).map(e=>{
+    const isProd = e.type==='produce';
+    const cls = isProd?'produce':'dispatch';
+    const icon = isProd?'▲':'▼';
+    const title = isProd
+      ? `+${fmt(e.qty)} ${e.unit} → <strong>${e.product}</strong>`
+      : `${fmt(e.qty)} ${e.unit} dispatched → <strong class="red" style="color:var(--red)">${e.product}</strong>`;
+    const meta = [e.date, isProd?'':e.dtype, e.ref].filter(Boolean).join(' · ');
+    return `<div class="act-item">
+      <div class="act-icon-box ${cls}">${icon}</div>
+      <div class="act-body">
+        <div class="act-title ${isProd?'':'dis'}">${title}</div>
+        <div class="act-meta">${meta}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function populateSelects(){
+  const dsel = document.getElementById('f-dispatch-product');
+  const prev = dsel.value;
+  dsel.innerHTML = `<option value="">— select product —</option>` +
+    Object.keys(S.products)
+      .filter(n=>S.products[n].currentStock>0)
+      .map(n=>`<option value="${n}" ${n===prev?'selected':''}>${n} (${fmt(S.products[n].currentStock)} ${S.products[n].unit})</option>`)
+      .join('');
+}
+
+function clearLog(){
+  S.log=[]; save(); renderActivity(); toast('Log cleared','ok');
+}
+
+// ══════════════════════════════════
+// TOAST
+// ══════════════════════════════════
+function toast(msg,cls='ok'){
+  const z=document.getElementById('toast-z');
+  const t=document.createElement('div');
+  t.className=`toast ${cls}`;
+  const ico=cls==='ok'?'⬡':cls==='good'?'✓':'✕';
+  t.innerHTML=`<span>${ico}</span><span>${msg}</span>`;
+  z.appendChild(t);
+  setTimeout(()=>t.remove(),2400);
+}
+
+// Modal swipe/tap to close
+document.getElementById('modal-veil').addEventListener('click',e=>{
+  if(e.target===e.currentTarget) closeDispatch();
+});
+
+// Enter to submit
+document.getElementById('f-qty').addEventListener('keydown',e=>{ if(e.key==='Enter') logProduction(); });
+</script>
+</body>
+</html>
