@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="logo-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="logo-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="logo-512.png">
+<meta name="apple-mobile-web-app-title" content="Daily Production Tracker">
+<meta name="application-name" content="Daily Production Tracker">
+<meta name="theme-color" content="#0f0d0b">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Daily Production Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --ink:#f0ebe3;
+  --ink2:#a89f94;
+  --ink3:#5a524a;
+  --bg:#0f0d0b;
+  --bg2:#161310;
+  --bg3:#1d1915;
+  --border:#2a2420;
+  --border2:#3a322c;
+  --amber:#e8a020;
+  --amber2:#f5b93a;
+  --amber-dim:rgba(232,160,32,0.12);
+  --amber-glow:rgba(232,160,32,0.22);
+  --red:#e84040;
+  --red-dim:rgba(232,64,64,0.1);
+  --green:#6ba89e;
+  --green-dim:rgba(107,168,158,0.12);
+  --blue:#4aa8d8;
+  --nav-h:64px;
+  --header-h:56px;
+}
+
+html,body{
+  height:100%;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Barlow',sans-serif;
+  overflow:hidden;
+}
+
+/* dot grid bg */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:radial-gradient(circle,rgba(232,160,32,0.05) 1px,transparent 1px);
+  background-size:24px 24px;
+  pointer-events:none;z-index:0;
+}
+
+/* ══ APP SHELL ══ */
+#app{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  z-index:1;
+}
+
+/* ══ HEADER ══ */
+.header{
+  flex-shrink:0;
+  height:var(--header-h);
+  background:var(--bg2);
+  border-bottom:2px solid var(--amber);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;
+  box-shadow:0 2px 20px rgba(232,160,32,0.12);
+}
+.header-brand{
+  display:flex;align-items:center;gap:10px;
+}
+.brand-hex{
+  width:30px;height:30px;
+  background:var(--amber);
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:0.85rem;color:#000;
+}
+.brand-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:1.5rem;letter-spacing:3px;
+  color:var(--amber);
+  text-shadow:0 0 20px var(--amber-glow);
+}
+.header-right{
+  display:flex;align-items:center;gap:8px;
+}
+.live-dot-wrap{
+  display:flex;align-items:center;gap:5px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.58rem;color:var(--green);letter-spacing:1px;
+}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 6px var(--green);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+#hdr-clock{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.65rem;color:var(--ink3);letter-spacing:0.5px;
+}
+
+/* ══ KPI BAR ══ */
+.kpi-bar{
+  flex-shrink:0;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+}
+.kpi-cell{
+  padding:10px 4px 8px;
+  text-align:center;
+  border-right:1px solid var(--border);
+  position:relative;
+}
+.kpi-cell:last-child{border-right:none;}
+.kpi-cell::after{
+  content:'';position:absolute;bottom:0;left:15%;right:15%;
+  height:2px;border-radius:1px;opacity:0;
+  transition:opacity 0.3s;
+}
+.kpi-cell.amber::after{background:var(--amber);opacity:1;}
+.kpi-cell.green::after{background:var(--green);opacity:1;}
+.kpi-cell.red::after{background:var(--red);opacity:1;}
+.kpi-cell.blue::after{background:var(--blue);opacity:1;}
+.kpi-v{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:1.5rem;letter-spacing:0.5px;line-height:1;
+}
+.kpi-cell.amber .kpi-v{color:var(--amber);text-shadow:0 0 12px var(--amber-glow);}
+.kpi-cell.green .kpi-v{color:var(--green);}
+.kpi-cell.red .kpi-v{color:var(--red);}
+.kpi-cell.blue .kpi-v{color:var(--blue);}
+.kpi-l{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.48rem;color:var(--ink3);
+  letter-spacing:1px;text-transform:uppercase;margin-top:2px;
+}
+
+/* ══ PAGES ══ */
+.pages{
+  flex:1;overflow:hidden;position:relative;
+}
+.page{
+  position:absolute;inset:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  display:none;
+  padding-bottom:calc(var(--nav-h) + 12px);
+}
+.page.active{display:block;}
+.page::-webkit-scrollbar{display:none;}
+
+/* ══ BOTTOM NAV ══ */
+.bottom-nav{
+  flex-shrink:0;
+  height:var(--nav-h);
+  background:var(--bg2);
+  border-top:1px solid var(--border2);
+  display:grid;grid-template-columns:repeat(3,1fr);
+  position:relative;z-index:50;
+}
+.nav-btn{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:4px;
+  background:none;border:none;cursor:pointer;
+  color:var(--ink3);
+  transition:color 0.15s;
+  padding:8px 0;
+  position:relative;
+}
+.nav-btn::before{
+  content:'';position:absolute;top:0;left:20%;right:20%;
+  height:2px;background:var(--amber);
+  transform:scaleX(0);transition:transform 0.2s ease;
+}
+.nav-btn.active{color:var(--amber);}
+.nav-btn.active::before{transform:scaleX(1);}
+.nav-icon{font-size:1.3rem;line-height:1;}
+.nav-label{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.5rem;letter-spacing:1.5px;text-transform:uppercase;
+}
+
+/* ══ PAGE INNER ══ */
+.pg-section{
+  margin:12px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+}
+.pg-sec-head{
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.pg-sec-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:0.85rem;
+  letter-spacing:3px;text-transform:uppercase;color:var(--amber);
+}
+.pg-sec-badge{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.5rem;letter-spacing:1.5px;
+  padding:3px 7px;border-radius:2px;
+  color:var(--ink3);border:1px solid var(--border2);
+}
+
+/* ══ FORM ══ */
+.form-pad{padding:16px;}
+.field-g{margin-bottom:14px;}
+.field-g:last-child{margin-bottom:0;}
+.field-label{
+  display:block;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.52rem;letter-spacing:2px;color:var(--ink3);
+  text-transform:uppercase;margin-bottom:6px;
+}
+.field-input,.field-select{
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:4px;
+  padding:13px 14px;
+  color:var(--ink);
+  font-family:'Share Tech Mono',monospace;
+  font-size:1rem;
+  outline:none;
+  transition:border-color 0.15s,box-shadow 0.15s;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.field-input:focus,.field-select:focus{
+  border-color:var(--amber);
+  box-shadow:0 0 0 3px var(--amber-dim);
+}
+.field-input::placeholder{color:var(--ink3);}
+.field-select option{background:var(--bg3);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ══ BIG BUTTONS ══ */
+.btn-produce{
+  width:100%;padding:16px;
+  background:var(--amber);color:#0f0d0b;
+  border:none;border-radius:4px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:1.1rem;letter-spacing:3px;
+  text-transform:uppercase;
+  transition:all 0.15s;
+  box-shadow:0 4px 20px var(--amber-glow);
+  margin-bottom:8px;
+}
+.btn-produce:active{transform:scale(0.98);background:var(--amber2);}
+
+.btn-dispatch{
+  width:100%;padding:15px;
+  background:transparent;color:var(--red);
+  border:1.5px solid var(--red);border-radius:4px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:1rem;letter-spacing:3px;
+  text-transform:uppercase;
+  transition:all 0.15s;
+}
+.btn-dispatch:active{background:var(--red-dim);transform:scale(0.98);}
+
+.btn-ghost-sm{
+  background:transparent;color:var(--ink3);
+  border:1px solid var(--border2);border-radius:3px;
+  padding:7px 12px;cursor:pointer;
+  font-family:'Share Tech Mono',monospace;font-size:0.6rem;
+  letter-spacing:1px;text-transform:uppercase;
+  transition:all 0.15s;
+}
+.btn-ghost-sm:active{border-color:var(--ink2);color:var(--ink2);}
+
+.divider-section{
+  display:flex;align-items:center;gap:10px;
+  margin:16px 0;
+}
+.div-l{flex:1;height:1px;background:var(--border);}
+.div-t{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.52rem;color:var(--ink3);letter-spacing:2px;
+}
+
+/* ══ PRODUCT CARDS ══ */
+.product-card{
+  padding:16px;border-bottom:1px solid var(--border);
+  position:relative;
+}
+.product-card:last-child{border-bottom:none;}
+.product-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;border-radius:0 2px 2px 0;
+  background:var(--amber);opacity:0;transition:opacity 0.15s;
+}
+.product-card:active::before{opacity:1;}
+
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.pc-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:1.15rem;letter-spacing:1px;
+}
+.pc-date{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.55rem;color:var(--ink3);margin-top:3px;
+}
+.pc-today-tag{
+  font-family:'Share Tech Mono',monospace;font-size:0.58rem;
+  padding:4px 9px;border-radius:3px;
+}
+.pc-today-tag.has{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(232,160,32,0.2);}
+.pc-today-tag.none{color:var(--ink3);}
+
+.pc-stock-row{
+  display:flex;align-items:baseline;gap:8px;margin-bottom:10px;
+}
+.pc-stock-num{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:2.8rem;letter-spacing:1px;line-height:1;
+}
+.stk-full{color:var(--green);text-shadow:0 0 14px rgba(107,168,158,0.4);}
+.stk-mid{color:var(--amber);text-shadow:0 0 14px var(--amber-glow);}
+.stk-low{color:var(--red);text-shadow:0 0 14px rgba(232,64,64,0.3);}
+.stk-zero{color:var(--ink3);}
+.pc-stock-unit{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.65rem;color:var(--ink3);
+}
+
+.progress-track{
+  height:5px;background:var(--border2);border-radius:3px;
+  margin-bottom:12px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;border-radius:3px;
+  transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+.pc-meta{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+.pc-stats{
+  display:flex;gap:12px;
+  font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--ink3);
+}
+.pc-actions{
+  display:flex;gap:6px;margin-top:10px;
+  border-top:1px solid var(--border);padding-top:10px;
+}
+.pc-btn{
+  flex:1;padding:8px 6px;border-radius:3px;cursor:pointer;
+  font-family:'Share Tech Mono',monospace;font-size:0.58rem;
+  letter-spacing:1px;text-transform:uppercase;border:none;
+  transition:all 0.15s;text-align:center;
+}
+.pc-btn-edit{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(232,160,32,0.2);}
+.pc-btn-edit:active{background:rgba(232,160,32,0.25);}
+.pc-btn-dispatch{background:var(--green-dim);color:var(--green);border:1px solid rgba(107,168,158,0.25);}
+.pc-btn-dispatch:active{background:rgba(107,168,158,0.2);}
+.pc-btn-del{background:var(--red-dim);color:var(--red);border:1px solid rgba(232,64,64,0.2);}
+.pc-btn-del:active{background:rgba(232,64,64,0.2);}
+.chip{
+  display:inline-flex;align-items:center;
+  padding:3px 8px;border-radius:2px;font-size:0.52rem;
+  font-family:'Share Tech Mono',monospace;letter-spacing:1px;
+}
+.chip-active{background:var(--green-dim);color:var(--green);border:1px solid rgba(107,168,158,0.25);}
+.chip-low{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(232,160,32,0.2);}
+.chip-zero{background:var(--red-dim);color:var(--red);border:1px solid rgba(232,64,64,0.2);}
+
+
+.btn-export-sm{
+  background:var(--amber);color:#0f0d0b;
+  border:1px solid var(--amber);border-radius:3px;
+  padding:7px 12px;cursor:pointer;
+  font-family:'Share Tech Mono',monospace;font-size:0.6rem;
+  letter-spacing:1px;text-transform:uppercase;
+  transition:all 0.15s;font-weight:700;
+}
+.btn-export-sm:active{background:var(--amber2);transform:scale(0.98);}
+.act-head-actions{display:flex;gap:8px;align-items:center;}
+
+/* ══ ACTIVITY LOG ══ */
+.act-item{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  animation:slid 0.2s ease;
+}
+@keyframes slid{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.act-item:last-child{border-bottom:none;}
+.act-icon-box{
+  width:28px;height:28px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.8rem;flex-shrink:0;
+}
+.act-icon-box.produce{background:var(--amber-dim);color:var(--amber);}
+.act-icon-box.dispatch{background:var(--red-dim);color:var(--red);}
+.act-body{flex:1;min-width:0;}
+.act-title{font-size:0.88rem;font-weight:500;color:var(--ink);margin-bottom:3px;}
+.act-title strong{color:var(--amber);}
+.act-title.dis strong{color:var(--red);}
+.act-meta{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--ink3);}
+.act-actions{
+  display:flex;gap:6px;margin-top:8px;
+}
+.act-btn{
+  padding:5px 10px;border-radius:3px;cursor:pointer;
+  font-family:'Share Tech Mono',monospace;font-size:0.55rem;
+  letter-spacing:1px;text-transform:uppercase;border:none;
+  transition:all 0.15s;
+}
+.act-btn-edit{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(232,160,32,0.2);}
+.act-btn-edit:active{background:rgba(232,160,32,0.2);}
+.act-btn-del{background:var(--red-dim);color:var(--red);border:1px solid rgba(232,64,64,0.2);}
+.act-btn-del:active{background:rgba(232,64,64,0.2);}
+
+/* ══ EDIT MODAL ══ */
+.edit-sheet{
+  background:var(--bg2);
+  border:1px solid var(--amber);
+  border-top:3px solid var(--amber);
+  border-radius:12px 12px 0 0;
+  padding:24px 20px 36px;
+  width:100%;max-width:480px;
+  animation:sheetUp 0.25s ease;
+}
+.edit-sheet .modal-title{color:var(--amber);}
+.btn-mc-save{background:var(--amber);color:#0f0d0b;}
+.btn-mc-save:active{background:var(--amber2);transform:scale(0.98);}
+
+/* ══ DELETE CONFIRM SHEET ══ */
+.del-sheet{
+  background:var(--bg2);
+  border:1px solid var(--red);
+  border-top:3px solid var(--red);
+  border-radius:12px 12px 0 0;
+  padding:24px 20px 36px;
+  width:100%;max-width:480px;
+  animation:sheetUp 0.25s ease;
+}
+
+/* ══ EMPTY ══ */
+.empty-state{
+  padding:48px 20px;text-align:center;
+}
+.empty-ico{font-size:2.5rem;opacity:0.15;margin-bottom:12px;}
+.empty-txt{
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.58rem;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;
+  line-height:1.8;
+}
+
+/* ══ MODAL ══ */
+.modal-veil{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.9);z-index:200;
+  align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-veil.open{display:flex;}
+.modal-sheet{
+  background:var(--bg2);
+  border:1px solid var(--red);
+  border-top:3px solid var(--red);
+  border-radius:12px 12px 0 0;
+  padding:24px 20px 36px;
+  width:100%;max-width:480px;
+  animation:sheetUp 0.25s ease;
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{
+  width:36px;height:4px;background:var(--border2);
+  border-radius:2px;margin:0 auto 20px;
+}
+.modal-title{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:1.5rem;letter-spacing:4px;color:var(--red);margin-bottom:6px;
+}
+.modal-sub{font-size:0.82rem;color:var(--ink2);margin-bottom:16px;line-height:1.6;}
+.modal-card{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:4px;padding:12px 14px;margin-bottom:14px;
+}
+.modal-card-name{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:1.1rem;color:var(--ink);margin-bottom:3px;
+}
+.modal-card-stock{
+  font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--amber);
+}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+.btn-mc{
+  padding:14px;border-radius:4px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;
+  border:none;transition:all 0.15s;
+}
+.btn-mc-cancel{background:var(--bg3);color:var(--ink3);border:1px solid var(--border2);}
+.btn-mc-confirm{background:var(--red);color:#fff;}
+.btn-mc-confirm:active{background:#c02020;transform:scale(0.98);}
+
+/* ══ TOAST ══ */
+#toast-z{
+  position:fixed;top:calc(var(--header-h) + 60px);
+  left:50%;transform:translateX(-50%);
+  z-index:999;display:flex;flex-direction:column;gap:8px;align-items:center;
+  pointer-events:none;
+}
+.toast{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:20px;padding:10px 18px;
+  font-family:'Share Tech Mono',monospace;font-size:0.7rem;
+  color:var(--ink);letter-spacing:1px;
+  animation:tIn 0.2s ease,tOut 0.25s ease 2s forwards;
+  display:flex;align-items:center;gap:8px;
+  white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,0.7);
+}
+.toast.ok{border-color:rgba(232,160,32,0.4);border-left:3px solid var(--amber);}
+.toast.bad{border-color:rgba(232,64,64,0.4);border-left:3px solid var(--red);}
+.toast.good{border-color:rgba(107,168,158,0.4);border-left:3px solid var(--green);}
+@keyframes tIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tOut{to{opacity:0;transform:translateY(-10px)}}
+
+/* ══ PREMIUM POLISH OVERRIDES ══ */
+:root{
+  --radius-lg:14px;
+  --radius-md:10px;
+  --shadow-soft:0 18px 50px rgba(0,0,0,0.35);
+  --shadow-amber:0 10px 35px rgba(232,160,32,0.18);
+}
+
+.header{
+  height:68px;
+  padding:0 22px;
+  background:
+    linear-gradient(135deg, rgba(232,160,32,0.10), transparent 32%),
+    linear-gradient(180deg, #191510 0%, #100e0c 100%);
+  border-bottom:1px solid rgba(232,160,32,0.65);
+}
+
+.brand-hex{
+  width:38px;
+  height:38px;
+  font-size:1rem;
+  box-shadow:0 0 0 4px rgba(232,160,32,0.08), 0 8px 26px rgba(232,160,32,0.22);
+}
+
+.brand-name{
+  font-size:1.35rem;
+  letter-spacing:2.4px;
+  color:#f5b93a;
+}
+
+.live-dot-wrap{
+  background:rgba(107,168,158,0.09);
+  border:1px solid rgba(107,168,158,0.22);
+  padding:6px 9px;
+  border-radius:999px;
+}
+
+#hdr-clock{
+  color:var(--ink2);
+  background:rgba(255,255,255,0.025);
+  border:1px solid var(--border);
+  padding:6px 9px;
+  border-radius:999px;
+}
+
+.kpi-bar{
+  background:linear-gradient(180deg, #171310 0%, #100e0c 100%);
+  border-bottom:1px solid rgba(232,160,32,0.25);
+}
+
+.kpi-cell{
+  padding:16px 4px 12px;
+}
+
+.kpi-v{
+  font-size:1.9rem;
+}
+
+.kpi-l{
+  font-size:0.54rem;
+  margin-top:5px;
+}
+
+.page{
+  padding:14px 10px calc(var(--nav-h) + 22px);
+}
+
+.pg-section{
+  margin:12px auto 16px;
+  max-width:760px;
+  border-radius:var(--radius-lg);
+  border-color:rgba(232,160,32,0.16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.008)),
+    var(--bg2);
+  box-shadow:var(--shadow-soft);
+}
+
+.pg-sec-head{
+  padding:15px 18px;
+  background:rgba(255,255,255,0.018);
+}
+
+.pg-sec-title{
+  font-size:0.95rem;
+  letter-spacing:2.6px;
+}
+
+.pg-sec-badge{
+  border-radius:999px;
+  padding:5px 10px;
+  background:rgba(255,255,255,0.025);
+}
+
+.form-pad{
+  padding:18px;
+}
+
+.field-label{
+  font-size:0.56rem;
+  color:#7e7469;
+}
+
+.field-input,.field-select{
+  border-radius:var(--radius-md);
+  background:#1b1713;
+  border-color:#3b332d;
+  padding:15px 16px;
+  font-size:1.02rem;
+}
+
+.field-input:focus,.field-select:focus{
+  border-color:#f5b93a;
+  box-shadow:0 0 0 4px rgba(232,160,32,0.13);
+}
+
+.btn-produce{
+  border-radius:var(--radius-md);
+  padding:18px;
+  box-shadow:var(--shadow-amber);
+}
+
+.btn-produce:hover,
+.btn-dispatch:hover,
+.btn-ghost-sm:hover,
+.pc-btn:hover,
+.act-btn:hover,
+.btn-mc:hover{
+  filter:brightness(1.06);
+}
+
+.product-card{
+  padding:18px;
+}
+
+.pc-name{
+  font-size:1.28rem;
+}
+
+.pc-stock-num{
+  font-size:3.1rem;
+}
+
+.pc-actions{
+  gap:8px;
+}
+
+.pc-btn,.act-btn,.btn-ghost-sm{
+  border-radius:8px;
+}
+
+.act-item{
+  padding:16px 18px;
+}
+
+.act-icon-box{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+}
+
+.bottom-nav{
+  height:72px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.018), transparent),
+    rgba(18,15,12,0.96);
+  backdrop-filter:blur(10px);
+  border-top:1px solid rgba(232,160,32,0.22);
+}
+
+.nav-icon{
+  font-size:1.45rem;
+}
+
+.nav-label{
+  font-size:0.54rem;
+}
+
+.modal-sheet,.edit-sheet,.del-sheet{
+  border-radius:22px 22px 0 0;
+  box-shadow:0 -20px 70px rgba(0,0,0,0.55);
+}
+
+.toast{
+  border-radius:999px;
+  padding:12px 20px;
+}
+
+@media (min-width: 900px){
+  #app{
+    max-width:820px;
+    left:50%;
+    transform:translateX(-50%);
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
+    box-shadow:0 0 80px rgba(0,0,0,0.65);
+  }
+  body{
+    background:
+      radial-gradient(circle at top left, rgba(232,160,32,0.14), transparent 34%),
+      radial-gradient(circle at bottom right, rgba(107,168,158,0.11), transparent 34%),
+      var(--bg);
+  }
+}
+
+
+.brand-logo{
+  width:42px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  overflow:hidden;
+  background:rgba(232,160,32,0.06);
+  border:1px solid rgba(232,160,32,0.18);
+  box-shadow:0 8px 26px rgba(232,160,32,0.16);
+}
+.brand-logo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+}
+
+
+
+
+/* Ultra-polished brand header */
+.header{
+  height:86px;
+  padding:0 22px;
+  background:
+    radial-gradient(circle at 15% 50%, rgba(232,160,32,0.22), transparent 30%),
+    linear-gradient(135deg, rgba(232,160,32,0.12), transparent 42%),
+    linear-gradient(180deg, #1b1712 0%, #0f0d0b 100%);
+  border-bottom:1px solid rgba(232,160,32,0.76);
+  box-shadow:
+    0 12px 38px rgba(0,0,0,0.48),
+    inset 0 1px 0 rgba(255,255,255,0.045),
+    0 0 34px rgba(232,160,32,0.12);
+}
+
+.header-brand{
+  flex:1;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+}
+
+.brand-mark{
+  height:68px;
+  width:min(560px, 72vw);
+  display:flex;
+  align-items:center;
+}
+
+.brand-mark svg{
+  height:100%;
+  width:100%;
+  display:block;
+  overflow:visible;
+}
+
+.website-brand-logo{
+  display:none !important;
+}
+
+.header-right{
+  flex-shrink:0;
+  gap:9px;
+}
+
+.live-dot-wrap{
+  background:rgba(107,168,158,0.10);
+  border:1px solid rgba(107,168,158,0.28);
+  padding:7px 10px;
+  border-radius:999px;
+  box-shadow:0 0 18px rgba(107,168,158,0.08);
+}
+
+#hdr-clock{
+  color:#c8beb2;
+  background:rgba(255,255,255,0.035);
+  border:1px solid rgba(232,160,32,0.16);
+  padding:7px 10px;
+  border-radius:999px;
+}
+
+@media (max-width:430px){
+  .header{
+    height:76px;
+    padding:0 12px;
+  }
+
+  .brand-mark{
+    height:58px;
+    width:72vw;
+    max-width:310px;
+  }
+
+  .live-dot-wrap{
+    display:none;
+  }
+
+  #hdr-clock{
+    font-size:0.58rem;
+    padding:6px 8px;
+  }
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-brand">
+
+<div class="brand-mark" aria-label="Daily Production Tracker">
+  <svg viewBox="0 0 820 150" xmlns="http://www.w3.org/2000/svg" role="img">
+    <defs>
+      <linearGradient id="goldDpt" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#FFE08A"/>
+        <stop offset="45%" stop-color="#E8A020"/>
+        <stop offset="100%" stop-color="#9E6410"/>
+      </linearGradient>
+      <filter id="goldGlow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feColorMatrix in="blur" type="matrix"
+          values="1 0 0 0 0.91  0 1 0 0 0.63  0 0 1 0 0.13  0 0 0 0.55 0"/>
+        <feMerge>
+          <feMergeNode/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Icon tile -->
+    <g transform="translate(4,13)">
+      <rect x="0" y="0" width="124" height="124" rx="30" fill="#0f0d0b"/>
+      <rect x="2" y="2" width="120" height="120" rx="28" fill="none" stroke="rgba(232,160,32,0.55)" stroke-width="3"/>
+
+      <path d="M28 76 A46 46 0 1 1 94 43"
+            fill="none" stroke="url(#goldDpt)" stroke-width="9"
+            stroke-linecap="round" filter="url(#goldGlow)"/>
+
+      <rect x="40" y="68" width="10" height="32" rx="3" fill="url(#goldDpt)"/>
+      <rect x="57" y="55" width="10" height="45" rx="3" fill="url(#goldDpt)"/>
+      <rect x="74" y="42" width="10" height="58" rx="3" fill="url(#goldDpt)"/>
+
+      <path d="M32 95 C50 82 66 70 90 50"
+            fill="none" stroke="url(#goldDpt)" stroke-width="9"
+            stroke-linecap="round"/>
+      <path d="M90 50 L82 49 L88 58 Z" fill="url(#goldDpt)"/>
+    </g>
+
+    <!-- Wordmark -->
+    <g transform="translate(155,42)">
+      <text x="0" y="0"
+        font-family="Barlow Condensed, Arial Narrow, Arial, sans-serif"
+        font-size="42"
+        font-weight="800"
+        letter-spacing="4"
+        fill="#F7EFE2">DAILY PRODUCTION</text>
+
+      <text x="0" y="48"
+        font-family="Barlow Condensed, Arial Narrow, Arial, sans-serif"
+        font-size="34"
+        font-weight="800"
+        letter-spacing="10"
+        fill="url(#goldDpt)">TRACKER</text>
+
+      <line x1="0" y1="68" x2="455" y2="68"
+        stroke="rgba(232,160,32,0.45)" stroke-width="2"/>
+    </g>
+  </svg>
+</div>
+
+    </div>
+    <div class="header-right">
+      <div class="live-dot-wrap"><div class="live-dot"></div>LIVE</div>
+      <div id="hdr-clock"></div>
+    </div>
+  </div>
+
+  <!-- KPI BAR -->
+  <div class="kpi-bar" style="grid-template-columns:1fr 1fr;">
+    <div class="kpi-cell amber">
+      <div class="kpi-v" id="kpi-cp">0</div>
+      <div class="kpi-l">Coir Pith · Bags</div>
+    </div>
+    <div class="kpi-cell" style="border-right:none;">
+      <div class="kpi-v" id="kpi-cf" style="color:#6ba89e;text-shadow:0 0 12px rgba(107,168,158,0.3);">0</div>
+      <div class="kpi-l">Coir Fiber · Bundles</div>
+      <div style="position:absolute;bottom:0;left:15%;right:15%;height:2px;border-radius:1px;background:#6ba89e;"></div>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="pages">
+
+    <!-- PAGE: LOG -->
+    <div class="page active" id="pg-log">
+
+      <!-- COIR PITH -->
+      <div class="pg-section">
+        <div class="pg-sec-head">
+          <span class="pg-sec-title">Coir Pith</span>
+          <span class="pg-sec-badge">BAGS</span>
+        </div>
+        <div class="form-pad">
+          <div class="field-g">
+            <label class="field-label">Bags Produced</label>
+            <input id="cp-qty" class="field-input" type="number" min="1" placeholder="0" inputmode="numeric">
+          </div>
+          <div class="field-g">
+            <label class="field-label">Production Date</label>
+            <input id="cp-date" class="field-input" type="date">
+          </div>
+          <button class="btn-produce" onclick="logProduct('Coir Pith','Bags','cp-qty','cp-date')">▲ LOG COIR PITH</button>
+        </div>
+      </div>
+
+      <!-- COIR FIBER -->
+      <div class="pg-section" style="border-color:#6ba89e;">
+        <div class="pg-sec-head" style="border-bottom-color:rgba(107,168,158,0.3);">
+          <span class="pg-sec-title" style="color:#6ba89e;">Coir Fiber</span>
+          <span class="pg-sec-badge" style="color:#6ba89e;border-color:rgba(107,168,158,0.3);">BUNDLES</span>
+        </div>
+        <div class="form-pad">
+          <div class="field-g">
+            <label class="field-label">Bundles Produced</label>
+            <input id="cf-qty" class="field-input" type="number" min="1" placeholder="0" inputmode="numeric">
+          </div>
+          <div class="field-g">
+            <label class="field-label">Production Date</label>
+            <input id="cf-date" class="field-input" type="date">
+          </div>
+          <button class="btn-produce" style="background:#6ba89e;box-shadow:0 4px 20px rgba(107,168,158,0.2);color:#0f0d0b;" onclick="logProduct('Coir Fiber','Bundles','cf-qty','cf-date')">▲ LOG COIR FIBER</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGE: INVENTORY -->
+    <div class="page" id="pg-inv">
+      <div class="pg-section">
+        <div class="pg-sec-head">
+          <span class="pg-sec-title">Inventory</span>
+          <span class="pg-sec-badge" id="inv-badge">0 ITEMS</span>
+        </div>
+        <div id="goods-list">
+          <div class="empty-state">
+            <div class="empty-ico">⬡</div>
+            <div class="empty-txt">No goods tracked yet<br>Log your first production run</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: ACTIVITY -->
+    <div class="page" id="pg-act">
+      <div class="pg-section">
+        <div class="pg-sec-head">
+          <span class="pg-sec-title">Activity Log</span>
+          <div class="act-head-actions">
+            <button class="btn-export-sm" onclick="exportActivityExcel()">EXPORT</button>
+            <button class="btn-ghost-sm" onclick="clearLog()">CLEAR</button>
+          </div>
+        </div>
+        <div id="activity-list">
+          <div class="empty-state">
+            <div class="empty-ico">◎</div>
+            <div class="empty-txt">No activity yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- pages -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-log" onclick="switchTab('log')">
+      <div class="nav-icon">▲</div>
+      <div class="nav-label">Log</div>
+    </button>
+    <button class="nav-btn" id="nav-inv" onclick="switchTab('inv')">
+      <div class="nav-icon">⬡</div>
+      <div class="nav-label">Inventory</div>
+    </button>
+    <button class="nav-btn" id="nav-act" onclick="switchTab('act')">
+      <div class="nav-icon">◎</div>
+      <div class="nav-label">Activity</div>
+    </button>
+  </div>
+
+</div><!-- app -->
+
+<!-- DISPATCH MODAL (bottom sheet) -->
+<div class="modal-veil" id="modal-veil">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">DISPATCH</div>
+    <div class="modal-sub" id="modal-desc">Enter quantity to dispatch from this product's stock.</div>
+    <div class="modal-card">
+      <div class="modal-card-name" id="modal-pname">—</div>
+      <div class="modal-card-stock" id="modal-pstock">—</div>
+    </div>
+    <div class="field-g">
+      <label class="field-label">Quantity to Dispatch</label>
+      <input id="modal-dispatch-qty" class="field-input" type="number" min="1" inputmode="numeric" placeholder="Enter quantity…">
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn-mc btn-mc-cancel" onclick="closeDispatch()">CANCEL</button>
+      <button class="btn-mc btn-mc-confirm" onclick="confirmDispatch()">⚡ CONFIRM</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY EDIT MODAL -->
+<div class="modal-veil" id="inv-edit-veil">
+  <div class="edit-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">EDIT PRODUCT</div>
+    <div class="modal-sub">Adjust the current stock, unit type, or rename this product.</div>
+    <div class="field-g">
+      <label class="field-label">Product Name</label>
+      <select id="inv-edit-name" class="field-select">
+        <option value="Coir Pith">Coir Pith</option>
+        <option value="Coir Fiber">Coir Fiber</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field-g">
+        <label class="field-label">Current Stock</label>
+        <input id="inv-edit-stock" class="field-input" type="number" min="0" inputmode="numeric" placeholder="0">
+      </div>
+      <div class="field-g">
+        <label class="field-label">Unit</label>
+        <select id="inv-edit-unit" class="field-select">
+          <option>Bags</option>
+          <option>Bundles</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-mc btn-mc-cancel" onclick="closeInvEdit()">CANCEL</button>
+      <button class="btn-mc btn-mc-save" onclick="saveInvEdit()">✓ SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY DELETE MODAL -->
+<div class="modal-veil" id="inv-del-veil">
+  <div class="del-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">DELETE PRODUCT</div>
+    <div class="modal-sub">This will permanently remove the product and all its production history and dispatch records.</div>
+    <div class="modal-card" id="inv-del-preview" style="margin-bottom:20px;">—</div>
+    <div class="modal-actions">
+      <button class="btn-mc btn-mc-cancel" onclick="closeInvDel()">CANCEL</button>
+      <button class="btn-mc btn-mc-confirm" onclick="confirmInvDelete()">✕ DELETE</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-z"></div>
+
+<!-- EDIT ENTRY MODAL -->
+<div class="modal-veil" id="edit-veil">
+  <div class="edit-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">EDIT ENTRY</div>
+    <div class="modal-sub">Update the quantity or date for this entry.</div>
+    <div class="field-g">
+      <label class="field-label">Product</label>
+      <div class="modal-card" style="margin-bottom:0;">
+        <div class="modal-card-name" id="edit-product-name">—</div>
+        <div class="modal-card-stock" id="edit-entry-type">—</div>
+      </div>
+    </div>
+    <div class="field-row" style="margin-top:14px;">
+      <div class="field-g">
+        <label class="field-label">Quantity</label>
+        <input id="edit-qty" class="field-input" type="number" min="1" inputmode="numeric" placeholder="0">
+      </div>
+      <div class="field-g">
+        <label class="field-label">Unit</label>
+        <select id="edit-unit" class="field-select">
+          <option>Bags</option>
+          <option>Bundles</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-g">
+      <label class="field-label">Date</label>
+      <input id="edit-date" class="field-input" type="date">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-mc btn-mc-cancel" onclick="closeEdit()">CANCEL</button>
+      <button class="btn-mc btn-mc-save" onclick="saveEdit()">✓ SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-veil" id="del-veil">
+  <div class="del-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">DELETE ENTRY</div>
+    <div class="modal-sub">This entry will be permanently removed and stock totals will be recalculated.</div>
+    <div class="modal-card" id="del-preview" style="margin-bottom:20px;">—</div>
+    <div class="modal-actions">
+      <button class="btn-mc btn-mc-cancel" onclick="closeDel()">CANCEL</button>
+      <button class="btn-mc btn-mc-confirm" onclick="confirmDelete()">✕ DELETE</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script>
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+const SK = 'manufact_mobile_v1';
+let S = { products:{}, log:[] }; // cleared state
+function save(){ try{ localStorage.setItem(SK,JSON.stringify(S)); }catch(e){} }
+function load(){}
+
+// ══════════════════════════════════
+// BOOT
+// ══════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  
+  const td = today();
+  document.getElementById('cp-date').value = td;
+  document.getElementById('cf-date').value = td;
+  tick(); setInterval(tick,1000);
+  renderAll();
+});
+
+function today(){ return new Date().toISOString().split('T')[0]; }
+function fmt(n){ return (+n).toLocaleString(undefined,{maximumFractionDigits:2}); }
+
+function tick(){
+  const now = new Date();
+  document.getElementById('hdr-clock').textContent =
+    now.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}).toUpperCase() + ' ' +
+    now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ══════════════════════════════════
+// TABS
+// ══════════════════════════════════
+function switchTab(tab){
+  ['log','inv','act'].forEach(t=>{
+    document.getElementById('pg-'+t).classList.toggle('active', t===tab);
+    document.getElementById('nav-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='inv') renderGoods();
+  if(tab==='act') renderActivity();
+}
+
+// ══════════════════════════════════
+// LOG PRODUCTION
+// ══════════════════════════════════
+function logProduct(name, unit, qtyId, dateId){
+  const qty  = parseFloat(document.getElementById(qtyId).value);
+  const date = document.getElementById(dateId).value;
+
+  if(!qty||qty<=0){ toast('Enter a valid quantity','bad'); return; }
+  if(!date){ toast('Select a date','bad'); return; }
+
+  if(!S.products[name]){
+    S.products[name]={ unit, currentStock:0, totalProduced:0, totalDispatched:0, peakStock:0, runs:[], dispatches:[] };
+  }
+  const p = S.products[name];
+  p.unit=unit; p.currentStock+=qty; p.totalProduced+=qty;
+  if(p.currentStock>p.peakStock) p.peakStock=p.currentStock;
+  p.runs.push({ qty, date, ts:Date.now() });
+  S.log.unshift({ type:'produce', product:name, qty, unit, date, ts:Date.now() });
+
+  save(); renderAll();
+  toast(`+${fmt(qty)} ${unit} — ${name}`,'ok');
+  document.getElementById(qtyId).value='';
+}
+
+// ══════════════════════════════════
+// DISPATCH
+// ══════════════════════════════════
+let _pd = null;
+
+function openDispatch(name){
+  if(!name){ toast('No product selected','bad'); return; }
+  const p = S.products[name];
+  if(!p||p.currentStock<=0){ toast('No stock available to dispatch','bad'); return; }
+
+  _pd = { name };
+  document.getElementById('modal-pname').textContent = name;
+  document.getElementById('modal-pstock').textContent = `Available: ${fmt(p.currentStock)} ${p.unit}`;
+  document.getElementById('modal-desc').textContent = `Enter how many ${p.unit.toLowerCase()} to dispatch. Max: ${fmt(p.currentStock)}.`;
+  document.getElementById('modal-dispatch-qty').value = '';
+  document.getElementById('modal-dispatch-qty').max = p.currentStock;
+  
+  document.getElementById('modal-veil').classList.add('open');
+  setTimeout(()=>{ document.getElementById('modal-dispatch-qty').focus(); }, 300);
+}
+
+function closeDispatch(){
+  document.getElementById('modal-veil').classList.remove('open');
+  _pd = null;
+}
+
+function confirmDispatch(){
+  if(!_pd) return;
+  const { name } = _pd;
+  const p = S.products[name];
+  const qty = parseFloat(document.getElementById('modal-dispatch-qty').value);
+  const ref = '';
+
+  if(!qty || qty <= 0){ toast('Enter a dispatch quantity','bad'); return; }
+  if(qty > p.currentStock){ toast(`Max available: ${fmt(p.currentStock)} ${p.unit}`,'bad'); return; }
+
+  p.currentStock = Math.max(0, p.currentStock - qty);
+  p.totalDispatched += qty;
+  p.dispatches.push({ qty, dtype:'Partial Dispatch', ref, date:today(), ts:Date.now() });
+  S.log.unshift({ type:'dispatch', product:name, qty, unit:p.unit, dtype:'Dispatch', ref, date:today(), ts:Date.now() });
+  save(); renderAll(); closeDispatch();
+  toast(`${fmt(qty)} ${p.unit} dispatched — ${name}`,'good');
+}
+
+function quickDispatch(name){
+  openDispatch(name);
+}
+
+// ══════════════════════════════════
+// RENDER
+// ══════════════════════════════════
+function renderAll(){
+  renderKPIs(); renderGoods(); renderActivity();
+}
+
+function renderKPIs(){
+  const cp = S.products['Coir Pith'];
+  const cf = S.products['Coir Fiber'];
+  document.getElementById('kpi-cp').textContent = cp ? fmt(cp.currentStock) : '0';
+  document.getElementById('kpi-cf').textContent = cf ? fmt(cf.currentStock) : '0';
+}
+
+function renderGoods(){
+  const names = Object.keys(S.products);
+  document.getElementById('inv-badge').textContent = names.length+' ITEM'+(names.length!==1?'S':'');
+  const list = document.getElementById('goods-list');
+  if(!names.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-ico">⬡</div><div class="empty-txt">No goods tracked yet</div></div>`;
+    return;
+  }
+  const td = today();
+  list.innerHTML = names.map(name=>{
+    const p = S.products[name];
+    const todayQty = p.runs.filter(r=>r.date===td).reduce((a,r)=>a+r.qty,0);
+    const lastRun  = p.runs.length ? p.runs[p.runs.length-1] : null;
+    const pct = p.peakStock>0 ? Math.min(100,Math.round(p.currentStock/p.peakStock*100)) : 0;
+
+    // Product identity color
+    const isCF = name === 'Coir Fiber';
+    const prodColor = isCF ? '#6ba89e' : 'var(--amber)';
+    const prodColorRgb = isCF ? '107,168,158' : '232,160,32';
+    const prodGlow = isCF ? 'rgba(107,168,158,0.3)' : 'var(--amber-glow)';
+
+    let valClass, barColor, chip;
+    if(p.currentStock===0){
+      valClass='stk-zero'; barColor='var(--red)';
+      chip=`<span class="chip chip-zero">DISPATCHED</span>`;
+    } else if(pct<25){
+      valClass='stk-low'; barColor='var(--red)';
+      chip=`<span class="chip chip-low">LOW STOCK</span>`;
+    } else if(pct<60){
+      valClass='stk-mid'; barColor='var(--amber)';
+      chip=`<span class="chip chip-low">IN STOCK</span>`;
+    } else {
+      barColor=prodColor;
+      chip=`<span class="chip" style="background:rgba(${prodColorRgb},0.12);color:${prodColor};border:1px solid rgba(${prodColorRgb},0.25);">IN STOCK</span>`;
+      valClass='';
+    }
+
+    const stockStyle = p.currentStock===0
+      ? 'color:var(--ink3)'
+      : pct<25
+        ? 'color:var(--red);text-shadow:0 0 14px rgba(232,64,64,0.3)'
+        : pct<60
+          ? 'color:var(--amber);text-shadow:0 0 14px var(--amber-glow)'
+          : `color:${prodColor};text-shadow:0 0 14px ${prodGlow}`;
+
+    const todayTag = todayQty>0
+      ? `<span class="pc-today-tag has" style="background:rgba(${prodColorRgb},0.1);color:${prodColor};border:1px solid rgba(${prodColorRgb},0.2);">+${fmt(todayQty)} TODAY</span>`
+      : `<span class="pc-today-tag none">NO OUTPUT</span>`;
+    const lastDate = lastRun ? lastRun.date : '—';
+
+    return `<div class="product-card" style="border-left:3px solid ${prodColor};">
+      <div class="pc-top">
+        <div>
+          <div class="pc-name" style="color:${prodColor};">${name}</div>
+          <div class="pc-date">LAST: ${lastDate}</div>
+        </div>
+        ${todayTag}
+      </div>
+      <div class="pc-stock-row">
+        <span class="pc-stock-num" style="${stockStyle}">${fmt(p.currentStock)}</span>
+        <span class="pc-stock-unit">${p.unit} available</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${pct}%;background:${barColor}"></div>
+      </div>
+      <div class="pc-meta">
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${chip}
+          <div class="pc-stats">
+            <span>PROD: ${fmt(p.totalProduced)}</span>
+            <span>DISP: ${fmt(p.totalDispatched)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn-edit" onclick="openInvEdit('${name.replace(/'/g,"\\'")}')">✎ EDIT</button>
+        <button class="pc-btn pc-btn-dispatch" style="color:${prodColor};border-color:rgba(${prodColorRgb},0.25);background:rgba(${prodColorRgb},0.1);" onclick="quickDispatch('${name.replace(/'/g,"\\'")}')">▼ DISPATCH</button>
+        <button class="pc-btn pc-btn-del" onclick="openInvDel('${name.replace(/'/g,"\\'")}')">✕ DELETE</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderActivity(){
+  const list = document.getElementById('activity-list');
+  if(!S.log.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-ico">◎</div><div class="empty-txt">No activity yet</div></div>`;
+    return;
+  }
+  list.innerHTML = S.log.slice(0,80).map((e,i)=>{
+    const isProd = e.type==='produce';
+    const cls = isProd?'produce':'dispatch';
+    const icon = isProd?'▲':'▼';
+    const title = isProd
+      ? `+${fmt(e.qty)} ${e.unit} → <strong>${e.product}</strong>`
+      : `${fmt(e.qty)} ${e.unit} dispatched → <strong class="red" style="color:var(--red)">${e.product}</strong>`;
+    const meta = [e.date, isProd?'':e.dtype, e.ref].filter(Boolean).join(' · ');
+    return `<div class="act-item">
+      <div class="act-icon-box ${cls}">${icon}</div>
+      <div class="act-body">
+        <div class="act-title ${isProd?'':'dis'}">${title}</div>
+        <div class="act-meta">${meta}</div>
+        <div class="act-actions">
+          <button class="act-btn act-btn-edit" onclick="openEdit(${i})">✎ EDIT</button>
+          <button class="act-btn act-btn-del" onclick="openDel(${i})">✕ DELETE</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearLog(){
+  S.log=[]; save(); renderActivity(); toast('Log cleared','ok');
+}
+
+
+// ══════════════════════════════════
+// EXPORT ACTIVITY TO EXCEL
+// ══════════════════════════════════
+function exportActivityExcel(){
+  if(!S.log.length){ toast('No activity to export','bad'); return; }
+  if(typeof XLSX === 'undefined'){
+    toast('Excel export library not loaded','bad');
+    return;
+  }
+
+  // Locked clean professional export schema: single Activity Log sheet only, no Time column.
+  const data = [...S.log].sort((a,b)=>(b.ts || 0) - (a.ts || 0));
+  const rows = data.map((e, idx)=>{
+    const dt = e.ts ? new Date(e.ts) : null;
+    const activity = e.type === 'produce' ? 'Production' : 'Dispatch';
+
+    return {
+      'S.N': idx + 1,
+      'Date': dt ? dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,'-') : '',
+      'Product': e.product || '',
+      'Activity': activity,
+      'Quantity': Number(e.qty || 0),
+      'Unit': e.unit || '',
+      'Type': activity
+    };
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(rows, {
+    header: ['S.N','Date','Product','Activity','Quantity','Unit','Type']
+  });
+
+  styleSheet(ws, rows.length + 1, 7);
+  ws['!cols'] = [{wch:6},{wch:12},{wch:18},{wch:14},{wch:12},{wch:10},{wch:14}];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Activity Log');
+  XLSX.writeFile(wb, `SD-Coir-Activity-${today()}.xlsx`);
+  toast('Excel exported','good');
+}
+
+function styleSheet(ws, rowCount, colCount){
+  if(!ws['!ref']) return;
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  ws['!autofilter'] = { ref: ws['!ref'] };
+  for(let C = range.s.c; C <= range.e.c; ++C){
+    const addr = XLSX.utils.encode_cell({r:0, c:C});
+    if(ws[addr]) ws[addr].s = {font:{bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1F2937'}},alignment:{horizontal:'center',vertical:'center'},border:excelBorder()};
+  }
+  for(let R = 1; R < rowCount; ++R){
+    for(let C = 0; C < colCount; ++C){
+      const addr = XLSX.utils.encode_cell({r:R,c:C});
+      if(ws[addr]) ws[addr].s = {alignment:{vertical:'center'},border:excelBorder(),fill:{fgColor:{rgb: R % 2 === 0 ? 'F9FAFB' : 'FFFFFF'}}};
+    }
+  }
+}
+
+function excelBorder(){
+  return {top:{style:'thin',color:{rgb:'D1D5DB'}},bottom:{style:'thin',color:{rgb:'D1D5DB'}},left:{style:'thin',color:{rgb:'D1D5DB'}},right:{style:'thin',color:{rgb:'D1D5DB'}}};
+}
+
+// ══════════════════════════════════
+// TOAST
+// ══════════════════════════════════
+function toast(msg,cls='ok'){
+  const z=document.getElementById('toast-z');
+  const t=document.createElement('div');
+  t.className=`toast ${cls}`;
+  const ico=cls==='ok'?'⬡':cls==='good'?'✓':'✕';
+  t.innerHTML=`<span>${ico}</span><span>${msg}</span>`;
+  z.appendChild(t);
+  setTimeout(()=>t.remove(),2400);
+}
+
+// ══════════════════════════════════
+// EDIT ENTRY
+// ══════════════════════════════════
+let _editIdx = null;
+
+function openEdit(idx){
+  const e = S.log[idx];
+  _editIdx = idx;
+  document.getElementById('edit-product-name').textContent = e.product;
+  document.getElementById('edit-entry-type').textContent = e.type==='produce' ? '▲ PRODUCTION ENTRY' : '▼ DISPATCH ENTRY';
+  document.getElementById('edit-qty').value = e.qty;
+  document.getElementById('edit-date').value = e.date;
+  // set unit select
+  const us = document.getElementById('edit-unit');
+  for(let o of us.options){ if(o.value===e.unit){ o.selected=true; break; } }
+  document.getElementById('edit-veil').classList.add('open');
+}
+
+function closeEdit(){
+  document.getElementById('edit-veil').classList.remove('open');
+  _editIdx=null;
+}
+
+function saveEdit(){
+  if(_editIdx===null) return;
+  const e   = S.log[_editIdx];
+  const newQty  = parseFloat(document.getElementById('edit-qty').value);
+  const newUnit = document.getElementById('edit-unit').value;
+  const newDate = document.getElementById('edit-date').value;
+
+  if(!newQty||newQty<=0){ toast('Enter a valid quantity','bad'); return; }
+  if(!newDate){ toast('Select a date','bad'); return; }
+
+  const oldQty = e.qty;
+  const diff   = newQty - oldQty;
+  const p      = S.products[e.product];
+
+  if(e.type==='produce'){
+    // adjust run in product
+    const run = p.runs.find(r=>r.ts===e.ts);
+    if(run){ run.qty=newQty; run.date=newDate; }
+    p.currentStock  += diff;
+    p.totalProduced += diff;
+    if(p.currentStock<0) p.currentStock=0;
+    p.peakStock = Math.max(p.peakStock, p.currentStock);
+  } else {
+    // dispatch: adjust dispatch record
+    const d = p.dispatches.find(d=>d.ts===e.ts);
+    if(d){ d.qty=newQty; d.date=newDate; }
+    p.currentStock    -= diff;
+    p.totalDispatched += diff;
+    if(p.currentStock<0) p.currentStock=0;
+  }
+
+  e.qty=newQty; e.unit=newUnit; e.date=newDate;
+  save(); renderAll(); closeEdit();
+  toast('Entry updated','ok');
+}
+
+// ══════════════════════════════════
+// DELETE ENTRY
+// ══════════════════════════════════
+let _delIdx = null;
+
+function openDel(idx){
+  const e = S.log[idx];
+  _delIdx = idx;
+  const isProd = e.type==='produce';
+  document.getElementById('del-preview').innerHTML =
+    `<div class="modal-card-name">${e.product}</div>
+     <div class="modal-card-stock">${isProd?'▲ Production':'▼ Dispatch'} · ${fmt(e.qty)} ${e.unit} · ${e.date}</div>`;
+  document.getElementById('del-veil').classList.add('open');
+}
+
+function closeDel(){
+  document.getElementById('del-veil').classList.remove('open');
+  _delIdx=null;
+}
+
+function confirmDelete(){
+  if(_delIdx===null) return;
+  const e = S.log[_delIdx];
+  const p = S.products[e.product];
+
+  if(e.type==='produce'){
+    p.runs = p.runs.filter(r=>r.ts!==e.ts);
+    p.currentStock  = Math.max(0, p.currentStock-e.qty);
+    p.totalProduced = Math.max(0, p.totalProduced-e.qty);
+    // recalc peak
+    p.peakStock = p.runs.reduce((acc,r,_,arr)=>{
+      let cum=0; for(let x of arr){ cum+=x.qty; if(x.ts===r.ts) break; }
+      return Math.max(acc,cum);
+    },0);
+    if(p.peakStock<p.currentStock) p.peakStock=p.currentStock;
+  } else {
+    p.dispatches = p.dispatches.filter(d=>d.ts!==e.ts);
+    p.currentStock    += e.qty; // restore stock
+    p.totalDispatched = Math.max(0, p.totalDispatched-e.qty);
+  }
+
+  S.log.splice(_delIdx,1);
+  save(); renderAll(); closeDel();
+  toast('Entry deleted','bad');
+}
+
+// ══════════════════════════════════
+// INVENTORY EDIT
+// ══════════════════════════════════
+let _invEditName = null;
+
+function openInvEdit(name){
+  _invEditName = name;
+  const p = S.products[name];
+  // set name select
+  const ns = document.getElementById('inv-edit-name');
+  for(let o of ns.options){ o.selected = o.value===name; }
+  document.getElementById('inv-edit-stock').value = p.currentStock;
+  const us = document.getElementById('inv-edit-unit');
+  for(let o of us.options){ o.selected = o.value===p.unit; }
+  document.getElementById('inv-edit-veil').classList.add('open');
+}
+
+function closeInvEdit(){
+  document.getElementById('inv-edit-veil').classList.remove('open');
+  _invEditName = null;
+}
+
+function saveInvEdit(){
+  if(!_invEditName) return;
+  const newName  = document.getElementById('inv-edit-name').value;
+  const newStock = parseFloat(document.getElementById('inv-edit-stock').value);
+  const newUnit  = document.getElementById('inv-edit-unit').value;
+
+  if(isNaN(newStock)||newStock<0){ toast('Enter a valid stock value','bad'); return; }
+
+  const oldData = S.products[_invEditName];
+
+  // Handle rename
+  if(newName !== _invEditName){
+    if(S.products[newName]){
+      // merge into existing product
+      S.products[newName].currentStock  += oldData.currentStock;
+      S.products[newName].totalProduced += oldData.totalProduced;
+      S.products[newName].totalDispatched += oldData.totalDispatched;
+      S.products[newName].runs = [...S.products[newName].runs, ...oldData.runs];
+      S.products[newName].dispatches = [...S.products[newName].dispatches, ...oldData.dispatches];
+      S.products[newName].peakStock = Math.max(S.products[newName].peakStock, oldData.peakStock);
+    } else {
+      S.products[newName] = { ...oldData };
+    }
+    // update log entries
+    S.log.forEach(e=>{ if(e.product===_invEditName) e.product=newName; });
+    delete S.products[_invEditName];
+    _invEditName = newName;
+  }
+
+  const p = S.products[_invEditName];
+  const diff = newStock - p.currentStock;
+  p.currentStock = newStock;
+  p.unit = newUnit;
+  if(diff>0){ p.totalProduced += diff; p.peakStock = Math.max(p.peakStock, p.currentStock); }
+  else if(diff<0){ p.totalDispatched += Math.abs(diff); }
+
+  save(); renderAll(); closeInvEdit();
+  toast('Product updated','ok');
+}
+
+// ══════════════════════════════════
+// INVENTORY DELETE
+// ══════════════════════════════════
+let _invDelName = null;
+
+function openInvDel(name){
+  _invDelName = name;
+  const p = S.products[name];
+  document.getElementById('inv-del-preview').innerHTML =
+    `<div class="modal-card-name">${name}</div>
+     <div class="modal-card-stock">Stock: ${fmt(p.currentStock)} ${p.unit} · Produced: ${fmt(p.totalProduced)} · Dispatched: ${fmt(p.totalDispatched)}</div>`;
+  document.getElementById('inv-del-veil').classList.add('open');
+}
+
+function closeInvDel(){
+  document.getElementById('inv-del-veil').classList.remove('open');
+  _invDelName = null;
+}
+
+function confirmInvDelete(){
+  if(!_invDelName) return;
+  // Remove all log entries for this product
+  S.log = S.log.filter(e=>e.product!==_invDelName);
+  delete S.products[_invDelName];
+  save(); renderAll(); closeInvDel();
+  toast('Product deleted','bad');
+}
+
+// Modal close on backdrop tap
+document.getElementById('modal-veil').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeDispatch(); });
+document.getElementById('edit-veil').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeEdit(); });
+document.getElementById('del-veil').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeDel(); });
+document.getElementById('inv-edit-veil').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeInvEdit(); });
+document.getElementById('inv-del-veil').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeInvDel(); });
+
+// Enter to submit
+document.getElementById('cp-qty').addEventListener('keydown',e=>{ if(e.key==='Enter') logProduct('Coir Pith','Bags','cp-qty','cp-date'); });
+document.getElementById('cf-qty').addEventListener('keydown',e=>{ if(e.key==='Enter') logProduct('Coir Fiber','Bundles','cf-qty','cf-date'); });
+</script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</body>
+</html>
