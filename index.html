@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Daily Production and Inventory Tracker</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="logo-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="logo-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="logo-512.png">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Inventory Tracker">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0d0b">
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+
+<style>
+:root{
+  --bg:#0f0d0b;
+  --panel:#15110e;
+  --gold:#e8a020;
+  --gold2:#ffe08a;
+  --teal:#6aa89e;
+  --ink:#f7efe2;
+  --muted:#b8aa99;
+  --line:#382e25;
+  --red:#e43d38;
+  --nav-h:74px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 20% 0%,rgba(232,160,32,.10),transparent 28%),
+    radial-gradient(circle at 86% 20%,rgba(106,168,158,.06),transparent 32%),
+    var(--bg);
+  color:var(--ink);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+}
+button,input{font:inherit}
+.app{min-height:100vh;padding-bottom:var(--nav-h)}
+.header{
+  height:124px;
+  padding:0 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:
+    radial-gradient(circle at 28% 105%,rgba(232,160,32,.42),transparent 22%),
+    linear-gradient(115deg,rgba(232,160,32,.11) 0%,rgba(232,160,32,.05) 45%,transparent 46%),
+    linear-gradient(180deg,#181410,#090807);
+  border-bottom:2px solid rgba(232,160,32,.88);
+  box-shadow:0 18px 48px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.06);
+  position:relative;
+  overflow:hidden;
+}
+.header:before{
+  content:"";
+  position:absolute;left:0;right:0;bottom:-1px;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,224,138,.95),rgba(232,160,32,.45),transparent)
+}
+.header:after{
+  content:"";
+  position:absolute;left:42%;bottom:-5px;width:180px;height:12px;
+  background:radial-gradient(ellipse,rgba(255,190,60,.9),transparent 70%);
+  filter:blur(2px)
+}
+.brand{display:flex;align-items:center;gap:20px;min-width:0;flex:1;position:relative;z-index:1}
+.brand img{height:92px;width:auto;object-fit:contain;filter:drop-shadow(0 0 16px rgba(232,160,32,.33))}
+.brand-divider{width:1px;height:70px;background:linear-gradient(transparent,rgba(232,160,32,.78),transparent);opacity:.85}
+.brand-title{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:2.38rem;
+  font-weight:800;
+  letter-spacing:1.2px;
+  line-height:1;
+  color:#f6d58f;
+  text-shadow:0 0 10px rgba(232,160,32,.22),0 2px 14px rgba(0,0,0,.62);
+}
+.brand-sub{
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+  font-size:.88rem;
+  font-weight:850;
+  letter-spacing:2.1px;
+  line-height:1;
+  text-transform:uppercase;
+  color:#f1d295;
+  margin-top:9px;
+  padding-left:2px;
+  opacity:.98;
+}
+.brand-sub:before{
+  content:"";
+  display:inline-block;
+  width:34px;
+  height:2px;
+  margin-right:10px;
+  vertical-align:middle;
+  background:linear-gradient(90deg,#e8a020,#ffe08a);
+  border-radius:999px;
+  box-shadow:0 0 8px rgba(232,160,32,.35);
+}
+.header-right{display:flex;align-items:center;gap:18px;position:relative;z-index:1}
+.h-sep{height:42px;width:1px;background:rgba(232,160,32,.55)}
+.live{
+  display:flex;align-items:center;gap:8px;color:#fff;font-weight:900;letter-spacing:1.6px;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,224,138,.22);
+  padding:10px 16px;border-radius:999px
+}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#43d46e;box-shadow:0 0 12px #43d46e}
+.datebox{display:flex;align-items:center;gap:10px}
+.date-ico{
+  width:38px;height:38px;border-radius:8px;border:1px solid rgba(232,160,32,.5);
+  display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:1.3rem
+}
+.date-main{font-weight:800;color:#f7efe2}
+.date-sub{font-size:.78rem;color:#cbbca8;margin-top:2px}
+.clock{
+  color:#f5d28a;background:rgba(232,160,32,.10);border:1px solid rgba(232,160,32,.35);
+  padding:9px 13px;border-radius:999px;font-size:.8rem;font-weight:900;letter-spacing:1px
+}
+.kpi{display:grid;grid-template-columns:1fr 1fr;background:#15110e;border-bottom:1px solid var(--line)}
+.kpi-card{padding:16px 10px 14px;text-align:center;border-right:1px solid var(--line)}
+.kpi-card:last-child{border-right:0}
+.kpi-v{font-size:2rem;font-weight:950;line-height:1;color:var(--gold)}
+.kpi-card.fiber .kpi-v{color:var(--teal)}
+.kpi-l{margin-top:6px;color:#a79a8c;font-size:.62rem;letter-spacing:1.8px;text-transform:uppercase}
+.kpi-rule{height:3px;margin:10px auto 0;width:72%;background:var(--gold)}
+.kpi-card.fiber .kpi-rule{background:var(--teal)}
+.page{display:none;padding:18px 12px calc(var(--nav-h) + 24px)}
+.page.active{display:block;animation:fadeUp .22s ease}
+.section{
+  max-width:1080px;margin:0 auto 18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012)),var(--panel);
+  border:1px solid rgba(232,160,32,.20);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 16px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.035)
+}
+.sec-head{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:54px;
+  padding:15px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015)
+}
+.sec-title{font-family:Georgia,serif;font-size:1.35rem;font-weight:950;letter-spacing:.8px;color:#f6ba3c;text-transform:uppercase}
+.sec-title.teal{color:var(--teal)}
+.badge{font-size:.6rem;letter-spacing:2px;color:#d7c5aa;border:1px solid rgba(232,160,32,.28);padding:6px 10px;border-radius:4px;text-transform:uppercase}
+.form{padding:18px 18px 22px}
+.field{margin-bottom:16px}
+.label{display:block;margin-bottom:8px;color:#e7c98e;font-size:.68rem;letter-spacing:1.95px;font-weight:950;text-transform:uppercase}
+.input{
+  width:100%;background:#1e1915;border:1px solid rgba(232,160,32,.28);
+  color:#f7efe2;border-radius:11px;padding:15px 16px;font-size:1rem;font-weight:800;outline:none
+}
+.input:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(232,160,32,.12)}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1) sepia(1) saturate(4) hue-rotate(350deg);opacity:.85}
+.primary{
+  width:100%;border:0;border-radius:11px;padding:18px 14px;
+  background:linear-gradient(135deg,#ffe08a,#e8a020 52%,#b87510);
+  color:#0b0805;font-weight:950;letter-spacing:1.75px;font-size:.95rem;text-transform:uppercase;
+  box-shadow:0 10px 28px rgba(232,160,32,.30);cursor:pointer
+}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:16px}
+.stat{background:rgba(255,255,255,.025);border:1px solid rgba(232,160,32,.14);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:center}
+.stat-ico{width:44px;height:44px;border-radius:50%;border:1px solid rgba(232,160,32,.55);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:1.4rem}
+.stat-l{color:#d6bd82;font-size:.74rem;font-weight:900;text-transform:uppercase}
+.stat-v{font-size:1.5rem;font-weight:950;margin-top:3px}
+.prod{display:grid;grid-template-columns:1fr auto;gap:12px;padding:16px;border-bottom:1px solid var(--line)}
+.prod:last-child{border-bottom:0}
+.prod-name{font-weight:950;font-size:1.08rem}
+.prod-meta{font-size:.72rem;color:#b6a792;margin-top:5px}
+.stock{font-size:1.8rem;font-weight:950;color:var(--gold);text-align:right}
+.stock.teal{color:var(--teal)}
+.actions{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.btn,.small-btn{
+  border-radius:8px;border:1px solid rgba(232,160,32,.38);
+  background:rgba(232,160,32,.11);color:#f5d28a;
+  padding:9px 13px;font-weight:950;letter-spacing:1.2px;font-size:.68rem;cursor:pointer
+}
+.head-actions{display:flex;gap:10px;align-items:center}
+.head-actions .small-btn:first-child{background:linear-gradient(135deg,#ffe08a,#e8a020 52%,#b87510);color:#0f0d0b;border:1px solid rgba(255,224,138,.58);box-shadow:0 8px 22px rgba(232,160,32,.34)}
+.head-actions .small-btn:last-child{background:rgba(255,255,255,.035);color:#d7c5aa;border:1px solid rgba(215,197,170,.28)}
+.act{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:16px;border-bottom:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015)}
+.act-ico{width:36px;height:36px;border-radius:9px;background:rgba(232,160,32,.15);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:950}
+.act-title{font-weight:950}
+.act-title b{color:var(--gold)}
+.act-meta{font-size:.72rem;color:#b6a792;margin-top:5px}
+.act-actions{display:flex;gap:8px;margin-top:10px}
+.empty{padding:28px 16px;text-align:center;color:#b6a792}
+.nav{
+  position:fixed;left:0;right:0;bottom:0;height:var(--nav-h);
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  background:rgba(17,14,12,.96);backdrop-filter:blur(12px);
+  border-top:1px solid rgba(232,160,32,.22);z-index:50
+}
+.nav button{border:0;background:transparent;color:#887c70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-weight:950;letter-spacing:1.4px;font-size:.6rem;text-transform:uppercase;cursor:pointer}
+.nav button.active{color:var(--gold)}
+.nav span{font-size:1.3rem}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;z-index:100}
+.modal.show{display:flex}
+.sheet{width:100%;background:#15110e;border-top:1px solid rgba(232,160,32,.35);border-radius:18px 18px 0 0;padding:18px;box-shadow:0 -22px 60px rgba(0,0,0,.6)}
+.modal-title{font-weight:950;letter-spacing:2px;color:#f5b93a;text-transform:uppercase;margin-bottom:8px}
+.modal-desc{color:#c8b69f;margin-bottom:16px}
+.modal-actions{display:flex;gap:8px}
+.cancel{flex:1;padding:13px;border-radius:10px;border:1px solid var(--line);background:transparent;color:#d7c5aa;font-weight:950}
+.save{flex:1;padding:13px;border-radius:10px;border:0;background:linear-gradient(135deg,#ffe08a,#e8a020);color:#111;font-weight:950}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 18px);transform:translateX(-50%);background:#1d1814;color:#fff;border:1px solid rgba(232,160,32,.35);padding:12px 18px;border-radius:999px;z-index:200;display:none;box-shadow:0 12px 34px rgba(0,0,0,.45);font-weight:900}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+button{transition:transform .14s ease,filter .14s ease}
+button:active{transform:scale(.965)}
+@media(max-width:760px){
+  .grid{grid-template-columns:1fr 1fr}
+  .brand-title{font-size:1.62rem}
+  .brand-sub{font-size:.70rem;letter-spacing:1.4px;margin-top:7px}
+  .brand-sub:before{width:24px;margin-right:7px}
+  .header-right{gap:8px}
+  .datebox{display:none}
+}
+@media(max-width:430px){
+  .header{height:96px;padding:0 10px}
+  .brand{gap:10px}
+  .brand img{height:62px}
+  .brand-divider{height:48px}
+  .brand-title{font-size:1.08rem;letter-spacing:.45px}
+  .brand-sub{font-size:.52rem;letter-spacing:.75px;margin-top:5px}
+  .brand-sub:before{width:16px;margin-right:5px}
+  .live{display:none}
+  .clock{font-size:.6rem;padding:6px 8px}
+  .grid{grid-template-columns:1fr}
+  .page{padding-left:8px;padding-right:8px}
+  .sec-head{padding:13px 14px}
+  .small-btn{padding:8px 11px;font-size:.62rem}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+  <div class="brand">
+    <img src="website-logo-header.png" alt="SD Coir Company">
+    <div class="brand-divider"></div>
+    <div>
+      <div class="brand-title">SD COIR COMPANY</div>
+      <div class="brand-sub">Daily Production &amp; Inventory Tracker</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live"><span class="live-dot"></span>LIVE</div>
+    <div class="h-sep"></div>
+    <div class="datebox"><div class="date-ico">▣</div><div><div class="date-main" id="dateMain"></div><div class="date-sub" id="dateSub"></div></div></div>
+    <div class="h-sep"></div>
+    <div class="clock" id="clock"></div>
+  </div>
+</header>
+
+<section class="kpi">
+  <div class="kpi-card"><div class="kpi-v" id="kpiPith">0</div><div class="kpi-l">Coir Pith · Bags</div><div class="kpi-rule"></div></div>
+  <div class="kpi-card fiber"><div class="kpi-v" id="kpiFiber">0</div><div class="kpi-l">Coir Fiber · Bundles</div><div class="kpi-rule"></div></div>
+</section>
+
+<main class="page active" id="page-log">
+  <section class="section">
+    <div class="sec-head"><span class="sec-title">Coir Pith</span><span class="badge">Bags</span></div>
+    <div class="form">
+      <div class="field"><label class="label">Bags Produced</label><input class="input" id="pithQty" type="number" min="0" placeholder="0"></div>
+      <div class="field"><label class="label">Production Date</label><input class="input" id="pithDate" type="date"></div>
+      <button class="primary" onclick="produce('Coir Pith')">▲ Log Coir Pith</button>
+    </div>
+  </section>
+  <section class="section">
+    <div class="sec-head"><span class="sec-title teal">Coir Fiber</span><span class="badge">Bundles</span></div>
+    <div class="form">
+      <div class="field"><label class="label">Bundles Produced</label><input class="input" id="fiberQty" type="number" min="0" placeholder="0"></div>
+      <div class="field"><label class="label">Production Date</label><input class="input" id="fiberDate" type="date"></div>
+      <button class="primary" onclick="produce('Coir Fiber')">▲ Log Coir Fiber</button>
+    </div>
+  </section>
+</main>
+
+<main class="page" id="page-inventory">
+  <section class="section">
+    <div class="sec-head"><span class="sec-title">Inventory Dashboard</span><span class="badge" id="invCount">0 Items</span></div>
+    <div class="grid">
+      <div class="stat"><div class="stat-ico">□</div><div><div class="stat-l">Products</div><div class="stat-v" id="statProducts">0</div></div></div>
+      <div class="stat"><div class="stat-ico">▣</div><div><div class="stat-l">Total Stock</div><div class="stat-v" id="statStock">0</div></div></div>
+      <div class="stat"><div class="stat-ico">↗</div><div><div class="stat-l">Production</div><div class="stat-v" id="statProduction">0</div></div></div>
+      <div class="stat"><div class="stat-ico">↘</div><div><div class="stat-l">Dispatch</div><div class="stat-v" id="statDispatch">0</div></div></div>
+    </div>
+    <div id="inventoryList"></div>
+  </section>
+</main>
+
+<main class="page" id="page-activity">
+  <section class="section">
+    <div class="sec-head"><span class="sec-title">Activity Log</span><div class="head-actions"><button class="small-btn" onclick="exportActivityExcel()">Export</button><button class="small-btn" onclick="clearLog()">Clear</button></div></div>
+    <div id="activityList"></div>
+  </section>
+</main>
+
+<nav class="nav">
+  <button class="active" onclick="showPage('log',this)"><span>▲</span>Log</button>
+  <button onclick="showPage('inventory',this)"><span>⬡</span>Inventory</button>
+  <button onclick="showPage('activity',this)"><span>◎</span>Activity</button>
+</nav>
+</div>
+
+<div class="modal" id="dispatchModal">
+  <div class="sheet">
+    <div class="modal-title">Dispatch</div>
+    <div class="modal-desc" id="dispatchDesc">Enter quantity to dispatch.</div>
+    <div class="field"><label class="label">Quantity to Dispatch</label><input class="input" id="dispatchQty" type="number" min="0" placeholder="Enter quantity..."></div>
+    <div class="modal-actions"><button class="cancel" onclick="closeDispatch()">Cancel</button><button class="save" onclick="confirmDispatch()">⚡ Confirm</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let S={products:{},log:[]};const SK='sd_coir_tracker_final_rebuilt_v1';let dispatchProduct=null;
+function pad(n){return String(n).padStart(2,'0')}
+function todayISO(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function save(){localStorage.setItem(SK,JSON.stringify(S))}
+function load(){try{const r=localStorage.getItem(SK);if(r)S=JSON.parse(r)}catch(e){}}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.__to);window.__to=setTimeout(()=>t.style.display='none',2000)}
+function ensure(name){if(!S.products[name])S.products[name]={stock:0,unit:name==='Coir Pith'?'Bags':'Bundles'};return S.products[name]}
+function produce(name){const key=name==='Coir Pith'?'pith':'fiber';const qty=Number(document.getElementById(key+'Qty').value||0);const date=document.getElementById(key+'Date').value||todayISO();if(qty<=0){toast('Enter quantity');return}const p=ensure(name);p.stock+=qty;S.log.unshift({type:'produce',product:name,qty,unit:p.unit,date,ts:Date.now()});document.getElementById(key+'Qty').value='';save();render();toast('Production logged')}
+function openDispatch(name){dispatchProduct=name;const p=ensure(name);document.getElementById('dispatchDesc').textContent=`Dispatch from ${name}. Available: ${p.stock} ${p.unit}`;document.getElementById('dispatchQty').value='';document.getElementById('dispatchModal').classList.add('show')}
+function closeDispatch(){document.getElementById('dispatchModal').classList.remove('show');dispatchProduct=null}
+function confirmDispatch(){if(!dispatchProduct)return;const qty=Number(document.getElementById('dispatchQty').value||0);const p=ensure(dispatchProduct);if(qty<=0){toast('Enter quantity');return}if(qty>p.stock){toast('Not enough stock');return}p.stock-=qty;S.log.unshift({type:'dispatch',product:dispatchProduct,qty,unit:p.unit,date:todayISO(),ts:Date.now()});closeDispatch();save();render();toast('Dispatch logged')}
+function recalc(){const old=[...S.log].reverse();S.products={};old.forEach(e=>{const p=ensure(e.product);if(e.type==='produce')p.stock+=Number(e.qty||0);else p.stock-=Number(e.qty||0)})}
+function editLog(i){const e=S.log[i];const q=Number(prompt('Edit quantity',e.qty));if(!q||q<=0)return;e.qty=q;recalc();save();render()}
+function deleteLog(i){if(!confirm('Delete this activity?'))return;S.log.splice(i,1);recalc();save();render()}
+function clearLog(){if(!confirm('Clear all activity and inventory?'))return;S={products:{},log:[]};save();render()}
+function render(){
+  const p=ensure('Coir Pith'),f=ensure('Coir Fiber');
+  document.getElementById('kpiPith').textContent=p.stock;
+  document.getElementById('kpiFiber').textContent=f.stock;
+  const products=Object.entries(S.products);
+  document.getElementById('invCount').textContent=products.length+' Items';
+  document.getElementById('statProducts').textContent=products.length;
+  document.getElementById('statStock').textContent=products.reduce((a,[,x])=>a+Number(x.stock||0),0);
+  document.getElementById('statProduction').textContent=S.log.filter(x=>x.type==='produce').reduce((a,x)=>a+Number(x.qty||0),0);
+  document.getElementById('statDispatch').textContent=S.log.filter(x=>x.type==='dispatch').reduce((a,x)=>a+Number(x.qty||0),0);
+  document.getElementById('inventoryList').innerHTML=products.length?products.map(([n,x])=>`<div class="prod"><div><div class="prod-name">${n}</div><div class="prod-meta">Current stock</div></div><div class="stock ${n==='Coir Fiber'?'teal':''}">${x.stock}<div class="kpi-l">${x.unit}</div></div><div class="actions"><button class="btn" onclick="openDispatch('${n}')">Dispatch</button></div></div>`).join(''):'<div class="empty">No goods tracked yet</div>';
+  document.getElementById('activityList').innerHTML=S.log.length?S.log.map((e,i)=>{const prod=e.type==='produce';return `<div class="act"><div class="act-ico">${prod?'▲':'↗'}</div><div><div class="act-title">${prod?'+':'-'}${e.qty} ${e.unit} ${prod?'→':'from'} <b>${e.product}</b></div><div class="act-meta">${e.date}</div><div class="act-actions"><button class="btn" onclick="editLog(${i})">✎ Edit</button><button class="btn" style="border-color:rgba(221,75,69,.45);color:#ff7770" onclick="deleteLog(${i})">× Delete</button></div></div></div>`}).join(''):'<div class="empty">No activity yet</div>';
+}
+function showPage(n,b){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+n).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
+function tick(){const d=new Date();document.getElementById('dateMain').textContent=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});document.getElementById('dateSub').textContent=d.toLocaleDateString('en-GB',{weekday:'long'});document.getElementById('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())}
+function exportActivityExcel(){
+  if(typeof XLSX==='undefined'){toast('Excel library not loaded');return}
+  if(!S.log.length){toast('No activity to export');return}
+  function fmtDate(value){
+    let d;
+    if(value && /^\d{4}-\d{2}-\d{2}$/.test(value)){const p=value.split('-').map(Number);d=new Date(p[0],p[1]-1,p[2]);}
+    else{d=new Date(value||Date.now());}
+    return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+  }
+  const headers=['Sl.No','Date','Product','Activity','Quantity','Unit','Type'];
+  const rows=S.log.map((e,i)=>[i+1,fmtDate(e.date||e.ts),e.product,e.type==='produce'?'Production':'Dispatch',Number(e.qty||0),e.unit,e.type==='produce'?'Production':'Dispatch']);
+  const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
+  ws['!cols']=[{wch:8},{wch:14},{wch:24},{wch:16},{wch:12},{wch:14},{wch:16}];
+  ws['!rows']=[{hpt:26},...rows.map(()=>({hpt:23}))];
+  ws['!autofilter']={ref:`A1:G${rows.length+1}`};
+  const range=XLSX.utils.decode_range(ws['!ref']);
+  const border={top:{style:'thin',color:{rgb:'D9E2EC'}},bottom:{style:'thin',color:{rgb:'D9E2EC'}},left:{style:'thin',color:{rgb:'D9E2EC'}},right:{style:'thin',color:{rgb:'D9E2EC'}}};
+  const headerStyle={font:{bold:true,color:{rgb:'FFFFFF'},sz:12},fill:{fgColor:{rgb:'1F2937'}},alignment:{horizontal:'center',vertical:'center'},border};
+  const bodyBase={font:{color:{rgb:'111827'},sz:11},alignment:{vertical:'center'},border};
+  const prodStyle={fill:{fgColor:{rgb:'FFF2CC'}},font:{color:{rgb:'7A4E00'},bold:true,sz:11},alignment:{horizontal:'center',vertical:'center'},border};
+  const dispatchStyle={fill:{fgColor:{rgb:'FCE4D6'}},font:{color:{rgb:'9C2F00'},bold:true,sz:11},alignment:{horizontal:'center',vertical:'center'},border};
+  for(let C=range.s.c;C<=range.e.c;C++){const cell=XLSX.utils.encode_cell({r:0,c:C});if(ws[cell])ws[cell].s=headerStyle;}
+  for(let R=1;R<=range.e.r;R++){
+    const activity=ws[`D${R+1}`]?.v;
+    for(let C=range.s.c;C<=range.e.c;C++){
+      const cell=XLSX.utils.encode_cell({r:R,c:C});if(!ws[cell])continue;
+      ws[cell].s=JSON.parse(JSON.stringify(bodyBase));
+      if([0,1,3,4,5,6].includes(C))ws[cell].s.alignment={horizontal:'center',vertical:'center'};
+      if(C===3||C===6)ws[cell].s=activity==='Production'?prodStyle:dispatchStyle;
+      else if(R%2===0)ws[cell].s.fill={fgColor:{rgb:'F8FAFC'}};
+      if(C===4)ws[cell].z='#,##0';
+    }
+  }
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Activity Log');XLSX.writeFile(wb,`activity_log_${todayISO()}.xlsx`);toast('Excel exported');
+}
+document.getElementById('pithDate').value=todayISO();document.getElementById('fiberDate').value=todayISO();load();render();tick();setInterval(tick,30000);
+</script>
+</body>
+</html>
