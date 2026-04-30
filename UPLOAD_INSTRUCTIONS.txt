@@ -1,0 +1,23 @@
+SD COIR COMPANY - GitHub Root Structure Build
+
+Upload ALL files directly to your GitHub repository root.
+
+Correct GitHub root:
+index.html
+manifest.json
+sw.js
+company-logo.png
+icon-180.png
+icon-192.png
+icon-512.png
+FINAL_CHECK_REPORT.txt
+
+Do NOT upload only images.
+Do NOT keep /icons or /assets folders for this version.
+
+iOS home screen icon path:
+icon-180.png?v=v7
+
+Browser test:
+Open https://YOUR-GITHUB-PAGES-URL/icon-180.png
+If that image opens, iOS can find the app icon.
